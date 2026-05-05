@@ -1,4 +1,4 @@
-const url = process.env.NEXT_PUBLIC_BASE_URL;
+const url = process.env.NEXT_PUBLIC_BASE_URL ?? '';
 
 module.exports = {
   contentful: {
