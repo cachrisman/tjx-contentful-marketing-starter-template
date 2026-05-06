@@ -1,0 +1,10 @@
+fragment NavigationLinkFields on NavigationLink {
+  __typename
+  sys {
+    id
+  }
+  linkText
+  linkTarget {
+    ...PageLinkFields
+  }
+}

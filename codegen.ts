@@ -1,49 +1,55 @@
-import { CodegenConfig } from '@graphql-codegen/cli';
+import type { CodegenConfig } from '@graphql-codegen/cli';
+import * as dotenv from 'dotenv';
 
-import { fetchConfig } from './src/lib/fetchConfig';
+dotenv.config({ path: '.env.local' });
+dotenv.config({ path: '.env' });
 
-export const config: CodegenConfig = {
+const spaceId = process.env.CONTENTFUL_SPACE_ID;
+const token = process.env.CONTENTFUL_DELIVERY_TOKEN || process.env.CONTENTFUL_ACCESS_TOKEN;
+
+const schemaUrl = spaceId
+  ? `https://graphql.contentful.com/content/v1/spaces/${spaceId}`
+  : 'https://graphql.contentful.com/content/v1/spaces/placeholder';
+
+const config: CodegenConfig = {
   overwrite: true,
   ignoreNoDocuments: true,
   schema: [
     {
-      [fetchConfig.endpoint]: fetchConfig.params,
+      [schemaUrl]: {
+        headers: {
+          Authorization: `Bearer ${token ?? 'placeholder'}`,
+          'Content-Type': 'application/json',
+        },
+      },
     },
   ],
+  documents: ['src/lib/contentful/graphql/**/*.graphql'],
   generates: {
-    './src/lib/__generated/graphql.schema.json': {
-      plugins: ['introspection'],
+    'src/lib/contentful/generated/types.ts': {
+      plugins: ['typescript'],
+      config: {
+        skipTypename: false,
+        enumsAsTypes: true,
+        scalars: {
+          DateTime: 'string',
+          JSON: 'Record<string, unknown>',
+          HexColor: 'string',
+        },
+      },
     },
-    './src/lib/__generated/graphql.schema.graphql': {
-      plugins: ['schema-ast'],
-    },
-    './src/lib/__generated/graphql.types.ts': {
-      plugins: ['typescript', 'typescript-operations'],
-      documents: ['./src/**/*.graphql'],
-    },
-    './src/': {
-      documents: ['./src/**/*.graphql'],
+    'src/lib/contentful/generated/': {
       preset: 'near-operation-file',
       presetConfig: {
         extension: '.generated.ts',
-        baseTypesPath: 'lib/__generated/graphql.types.ts',
-        folder: '__generated',
+        baseTypesPath: '../generated/types.ts',
       },
-      plugins: [
-        'typescript-operations',
-        'typescript-react-query',
-      ],
+      plugins: ['typescript-operations', 'typed-document-node'],
       config: {
-        exposeQueryKeys: true,
-        exposeFetcher: true,
-        rawRequest: false,
-        inlineFragmentTypes: 'combine',
+        useTypeImports: true,
         skipTypename: false,
-        exportFragmentSpreadSubTypes: true,
         dedupeFragments: true,
         preResolveTypes: true,
-        withHooks: true,
-        fetcher: '@src/lib/fetchConfig#customFetcher',
       },
     },
   },

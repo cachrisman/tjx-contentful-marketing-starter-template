@@ -1,0 +1,40 @@
+query CtfGlobalSettings($locale: String, $preview: Boolean) @contentSourceMaps {
+  globalSettingsCollection(
+    locale: $locale
+    preview: $preview
+    limit: 1
+    where: { internalName: "Defaults" }
+  ) {
+    items {
+      __typename
+      sys {
+        id
+      }
+      internalName
+      siteName
+      siteTitle
+      siteDescription
+      defaultSeo {
+        ...SeoMetadataFields
+      }
+      lightThemeTextColor
+      lightThemeBackgroundColor
+      lightThemeAccentColor
+      darkThemeTextColor
+      darkThemeBackgroundColor
+      darkThemeAccentColor
+      logo {
+        ...AssetFields
+      }
+      logoTarget {
+        ...PageLinkFields
+      }
+      headerMenu {
+        ...NavigationMenuFields
+      }
+      siteFooterMenu {
+        ...FooterMenuFields
+      }
+    }
+  }
+}

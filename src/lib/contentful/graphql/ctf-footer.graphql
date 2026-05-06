@@ -1,0 +1,54 @@
+fragment FooterColumnFields on FooterColumn {
+  __typename
+  sys {
+    id
+  }
+  heading
+  columnTitleLink {
+    __typename
+    ... on Page {
+      ...PageLinkFields
+    }
+    ... on NavigationLink {
+      ...NavigationLinkFields
+    }
+  }
+  linksCollection(limit: 20) {
+    items {
+      ...PageLinkFields
+    }
+  }
+}
+
+fragment FooterMenuFields on FooterMenu {
+  __typename
+  sys {
+    id
+  }
+  footerColumnsCollection(limit: 13) {
+    items {
+      ...FooterColumnFields
+    }
+  }
+  legalLinks {
+    featuredPagesCollection {
+      ...MenuGroupFields
+    }
+  }
+  twitterLink
+  facebookLink
+  linkedinLink
+  instagramLink
+}
+
+fragment FooterFields on FooterMenuCollection {
+  items {
+    ...FooterMenuFields
+  }
+}
+
+query CtfFooter($locale: String, $preview: Boolean) @contentSourceMaps {
+  footerMenuCollection(locale: $locale, preview: $preview, limit: 1) {
+    ...FooterFields
+  }
+}
