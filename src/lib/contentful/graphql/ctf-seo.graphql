@@ -1,0 +1,10 @@
+fragment SeoMetadataFields on Seo {
+  __typename
+  title
+  description
+  image {
+    ...AssetFields
+  }
+  noIndex
+  noFollow
+}
