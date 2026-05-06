@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  font-size: 1.8rem;
+  font-family: var(--font-red-hat), ui-sans-serif, system-ui, sans-serif;
+  color: #000;
+  min-height: 100%;
+}
