@@ -1,28 +1,42 @@
 'use client';
 
 import { ContentfulLivePreviewProvider } from '@contentful/live-preview/react';
+import { createContext, useContext, type ReactNode } from 'react';
+
+const ContentfulInspectorEnabledContext = createContext(false);
+
+/** Mirrors draft/preview mode so client blocks can skip Contentful inspector hooks during static prerender. */
+export function useContentfulInspectorEnabled(): boolean {
+  return useContext(ContentfulInspectorEnabledContext);
+}
 
 export function ContentfulPreviewProvider({
   locale,
   preview,
+  environment,
   children,
 }: {
   locale: string;
   preview: boolean;
-  children: React.ReactNode;
+  /** Contentful environment id (e.g. `master`). Must match GraphQL `CONTENTFUL_ENVIRONMENT`. */
+  environment?: string;
+  children: ReactNode;
 }) {
   const space = process.env.NEXT_PUBLIC_CONTENTFUL_SPACE_ID ?? '';
 
   return (
-    <ContentfulLivePreviewProvider
-      locale={locale}
-      space={space}
-      enableInspectorMode={preview}
-      enableLiveUpdates={preview}
-      debugMode={false}
-      targetOrigin={['https://app.contentful.com', 'https://app.eu.contentful.com']}
-    >
-      {children}
-    </ContentfulLivePreviewProvider>
+    <ContentfulInspectorEnabledContext.Provider value={preview}>
+      <ContentfulLivePreviewProvider
+        locale={locale}
+        space={space}
+        environment={environment}
+        enableInspectorMode={preview}
+        enableLiveUpdates={preview}
+        debugMode={process.env.NEXT_PUBLIC_CONTENTFUL_LIVE_PREVIEW_DEBUG === '1'}
+        targetOrigin={['https://app.contentful.com', 'https://app.eu.contentful.com']}
+      >
+        {children}
+      </ContentfulLivePreviewProvider>
+    </ContentfulInspectorEnabledContext.Provider>
   );
 }

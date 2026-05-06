@@ -15,11 +15,21 @@ export type ComponentReferenceFields_ComponentQuote_Fragment = { __typename: 'Co
 
 export type ComponentReferenceFields_ComponentTextBlock_Fragment = { __typename: 'ComponentTextBlock', sys: { __typename?: 'Sys', id: string } };
 
+export type ComponentReferenceFields_FooterColumn_Fragment = { __typename: 'FooterColumn', sys: { __typename?: 'Sys', id: string } };
+
 export type ComponentReferenceFields_FooterMenu_Fragment = { __typename: 'FooterMenu', sys: { __typename?: 'Sys', id: string } };
+
+export type ComponentReferenceFields_GlobalSettings_Fragment = { __typename: 'GlobalSettings', sys: { __typename?: 'Sys', id: string } };
 
 export type ComponentReferenceFields_MenuGroup_Fragment = { __typename: 'MenuGroup', sys: { __typename?: 'Sys', id: string } };
 
+export type ComponentReferenceFields_NavigationColumn_Fragment = { __typename: 'NavigationColumn', sys: { __typename?: 'Sys', id: string } };
+
+export type ComponentReferenceFields_NavigationLink_Fragment = { __typename: 'NavigationLink', sys: { __typename?: 'Sys', id: string } };
+
 export type ComponentReferenceFields_NavigationMenu_Fragment = { __typename: 'NavigationMenu', sys: { __typename?: 'Sys', id: string } };
+
+export type ComponentReferenceFields_NavigationSection_Fragment = { __typename: 'NavigationSection', sys: { __typename?: 'Sys', id: string } };
 
 export type ComponentReferenceFields_Page_Fragment = { __typename: 'Page', sys: { __typename?: 'Sys', id: string } };
 
@@ -41,9 +51,14 @@ export type ComponentReferenceFieldsFragment =
   | ComponentReferenceFields_ComponentProductTable_Fragment
   | ComponentReferenceFields_ComponentQuote_Fragment
   | ComponentReferenceFields_ComponentTextBlock_Fragment
+  | ComponentReferenceFields_FooterColumn_Fragment
   | ComponentReferenceFields_FooterMenu_Fragment
+  | ComponentReferenceFields_GlobalSettings_Fragment
   | ComponentReferenceFields_MenuGroup_Fragment
+  | ComponentReferenceFields_NavigationColumn_Fragment
+  | ComponentReferenceFields_NavigationLink_Fragment
   | ComponentReferenceFields_NavigationMenu_Fragment
+  | ComponentReferenceFields_NavigationSection_Fragment
   | ComponentReferenceFields_Page_Fragment
   | ComponentReferenceFields_Seo_Fragment
   | ComponentReferenceFields_TopicBusinessInfo_Fragment

@@ -1,13 +1,15 @@
 import type { Metadata } from 'next';
-import { draftMode } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { MarketingSection } from '@/components/marketing/marketing-section';
+import { pickGlobalSettingsEntry, loadGlobalSettings } from '@/lib/contentful/global-settings';
 import { loadPageBySlug } from '@/lib/contentful/load-page';
+import { metadataForPage } from '@/lib/contentful/page-metadata';
+import { isContentfulPreview } from '@/lib/contentful/preview-request';
 import { contentfulGraphql } from '@/lib/contentful/graphql-request';
 import { AllPageSlugsDocument } from '@/lib/contentful/graphql/all-pages.generated';
 import { isLocale, locales, type Locale } from '@/lib/i18n/config';
-import { siteConfig } from '@/lib/site-config';
+import { normalizeSlug } from '@/lib/slug-normalize';
 
 export async function generateStaticParams() {
   const paths: { locale: string; slug: string }[] = [];
@@ -20,8 +22,9 @@ export async function generateStaticParams() {
       );
       const items = data.pageCollection?.items?.filter(Boolean) ?? [];
       for (const p of items) {
-        if (p?.slug && p.slug !== 'home') {
-          paths.push({ locale, slug: p.slug });
+        const slug = normalizeSlug(p?.slug ?? null);
+        if (slug != null && slug !== 'home') {
+          paths.push({ locale, slug });
         }
       }
     } catch {
@@ -36,33 +39,19 @@ export async function generateMetadata({
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { locale: loc, slug } = await params;
+  const { locale: loc, slug: rawSlug } = await params;
   if (!isLocale(loc)) return {};
-  const { isEnabled } = await draftMode();
-  const data = await loadPageBySlug(slug, loc, isEnabled);
+  const slug = normalizeSlug(rawSlug);
+  if (slug == null) return { title: 'Not found' };
+  const preview = await isContentfulPreview();
+  const [data, globalCollection] = await Promise.all([
+    loadPageBySlug(slug, loc, preview),
+    loadGlobalSettings(loc, preview),
+  ]);
   const page = data?.page;
   if (!page) return { title: 'Not found' };
-  const seo = page.seo;
-  const title = seo?.title ?? page.pageName ?? siteConfig.meta.title;
-  const description = seo?.description ?? siteConfig.meta.description;
-  const robots =
-    seo?.noIndex || seo?.noFollow
-      ? {
-          index: seo.noIndex ? false : true,
-          follow: seo.noFollow ? false : true,
-        }
-      : undefined;
-
-  return {
-    title,
-    description,
-    robots,
-    openGraph: {
-      title,
-      description,
-      images: seo?.image?.url ? [{ url: seo.image.url }] : [{ url: siteConfig.meta.image }],
-    },
-  };
+  const gs = pickGlobalSettingsEntry(globalCollection);
+  return metadataForPage(page, gs);
 }
 
 export default async function SlugPage({
@@ -70,11 +59,13 @@ export default async function SlugPage({
 }: {
   params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { locale: loc, slug } = await params;
+  const { locale: loc, slug: rawSlug } = await params;
   if (!isLocale(loc)) notFound();
+  const slug = normalizeSlug(rawSlug);
+  if (slug == null) notFound();
   const locale = loc as Locale;
-  const { isEnabled } = await draftMode();
-  const data = await loadPageBySlug(slug, locale, isEnabled);
+  const preview = await isContentfulPreview();
+  const data = await loadPageBySlug(slug, locale, preview);
   if (!data) notFound();
 
   return (
@@ -82,16 +73,16 @@ export default async function SlugPage({
       {data.topSection.map(
         (entry, i) =>
           entry && (
-            <MarketingSection key={`top-${entry.sys.id}-${i}`} entry={entry} locale={locale} />
+            <MarketingSection key={`top-${entry.sys.id}-${i}`} entry={entry} locale={locale} preview={preview} />
           ),
       )}
       {data.pageContent && (
-        <MarketingSection entry={data.pageContent} locale={locale} />
+        <MarketingSection entry={data.pageContent} locale={locale} preview={preview} />
       )}
       {data.extraSection.map(
         (entry, i) =>
           entry && (
-            <MarketingSection key={`extra-${entry.sys.id}-${i}`} entry={entry} locale={locale} />
+            <MarketingSection key={`extra-${entry.sys.id}-${i}`} entry={entry} locale={locale} preview={preview} />
           ),
       )}
     </>

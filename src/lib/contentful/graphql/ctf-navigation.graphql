@@ -1,25 +1,86 @@
-fragment NavigationFields on NavigationMenuCollection {
-  items {
-    menuItemsCollection {
-      items {
-        __typename
-        sys {
-          id
+fragment NavigationColumnFields on NavigationColumn {
+  __typename
+  sys {
+    id
+  }
+  heading
+  columnTitleLink {
+    __typename
+    ... on Page {
+      ...PageLinkFields
+    }
+    ... on NavigationLink {
+      ...NavigationLinkFields
+    }
+  }
+  linksCollection(limit: 20) {
+    items {
+      ...PageLinkFields
+    }
+  }
+}
+
+fragment PageFeaturedNavFields on Page {
+  ...PageLinkFields
+  seo {
+    image {
+      ...AssetFields
+    }
+  }
+  topSectionCollection(limit: 8) {
+    items {
+      ... on ComponentHeroBanner {
+        image {
+          ...AssetFields
         }
-        groupName
-        link: groupLink {
-          ...PageLinkFields
-        }
-        children: featuredPagesCollection {
-          ...MenuGroupFields
+      }
+      ... on ComponentDuplex {
+        image {
+          ...AssetFields
         }
       }
     }
   }
 }
 
-query CtfNavigation($locale: String, $preview: Boolean) {
-  navigationMenuCollection(locale: $locale, preview: $preview, limit: 1) {
+fragment NavigationSectionFields on NavigationSection {
+  __typename
+  sys {
+    id
+  }
+  label
+  sectionTitleLink {
+    ...PageLinkFields
+  }
+  featuredLink {
+    ...PageFeaturedNavFields
+  }
+  featuredImage {
+    ...AssetFields
+  }
+  columnsCollection(limit: 13) {
+    items {
+      ...NavigationColumnFields
+    }
+  }
+}
+
+fragment NavigationMenuFields on NavigationMenu {
+  sectionsCollection(limit: 8) {
+    items {
+      ...NavigationSectionFields
+    }
+  }
+}
+
+fragment NavigationFields on NavigationMenuCollection {
+  items {
+    ...NavigationMenuFields
+  }
+}
+
+query CtfNavigation($locale: String, $preview: Boolean) @contentSourceMaps {
+  navigationMenuCollection(locale: $locale, preview: $preview, limit: 1, order: [sys_publishedAt_DESC]) {
     ...NavigationFields
   }
 }

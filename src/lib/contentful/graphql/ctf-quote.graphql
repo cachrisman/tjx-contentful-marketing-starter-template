@@ -26,7 +26,7 @@ fragment QuoteFields on ComponentQuote {
   colorPalette
 }
 
-query CtfQuote($id: String!, $locale: String, $preview: Boolean) {
+query CtfQuote($id: String!, $locale: String, $preview: Boolean) @contentSourceMaps {
   componentQuote(id: $id, locale: $locale, preview: $preview) {
     ...QuoteFields
   }

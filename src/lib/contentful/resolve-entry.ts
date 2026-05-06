@@ -20,7 +20,7 @@ import type { CtfProductTableQuery } from '@/lib/contentful/graphql/ctf-product-
 import type { CtfProductQuery } from '@/lib/contentful/graphql/ctf-product.generated';
 import type { CtfQuoteQuery } from '@/lib/contentful/graphql/ctf-quote.generated';
 import type { CtfTextBlockQuery } from '@/lib/contentful/graphql/ctf-text-block.generated';
-import { contentfulGraphql } from '@/lib/contentful/graphql-request';
+import { contentfulGraphqlSafe } from '@/lib/contentful/graphql-request';
 
 export type EntryRef = {
   __typename: string;
@@ -87,50 +87,50 @@ export async function resolveMarketingEntry(
 
   switch (ref.__typename) {
     case 'ComponentHeroBanner': {
-      const d = await contentfulGraphql(CtfHeroBannerDocument, v, { preview });
-      return d.componentHeroBanner ?? null;
+      const d = await contentfulGraphqlSafe(CtfHeroBannerDocument, v, { preview });
+      return d?.componentHeroBanner ?? null;
     }
     case 'ComponentDuplex': {
-      const d = await contentfulGraphql(CtfDuplexDocument, v, { preview });
-      return d.componentDuplex ?? null;
+      const d = await contentfulGraphqlSafe(CtfDuplexDocument, v, { preview });
+      return d?.componentDuplex ?? null;
     }
     case 'ComponentCta': {
-      const d = await contentfulGraphql(CtfCtaDocument, v, { preview });
-      return d.componentCta ?? null;
+      const d = await contentfulGraphqlSafe(CtfCtaDocument, v, { preview });
+      return d?.componentCta ?? null;
     }
     case 'ComponentInfoBlock': {
-      const d = await contentfulGraphql(CtfInfoBlockDocument, v, { preview });
-      return d.componentInfoBlock ?? null;
+      const d = await contentfulGraphqlSafe(CtfInfoBlockDocument, v, { preview });
+      return d?.componentInfoBlock ?? null;
     }
     case 'ComponentQuote': {
-      const d = await contentfulGraphql(CtfQuoteDocument, v, { preview });
-      const q = d.componentQuote;
+      const d = await contentfulGraphqlSafe(CtfQuoteDocument, v, { preview });
+      const q = d?.componentQuote;
       if (!q) return null;
       const richTextEmbeddings = await resolveRichTextEmbeddings(q.quote?.links, locale, preview);
       return { ...q, richTextEmbeddings } as ResolvedMarketingEntry;
     }
     case 'ComponentTextBlock': {
-      const d = await contentfulGraphql(CtfTextBlockDocument, v, { preview });
-      const t = d.componentTextBlock;
+      const d = await contentfulGraphqlSafe(CtfTextBlockDocument, v, { preview });
+      const t = d?.componentTextBlock;
       if (!t) return null;
       const richTextEmbeddings = await resolveRichTextEmbeddings(t.body?.links, locale, preview);
       return { ...t, richTextEmbeddings } as ResolvedMarketingEntry;
     }
     case 'TopicPerson': {
-      const d = await contentfulGraphql(CtfPersonDocument, v, { preview });
-      return d.topicPerson ?? null;
+      const d = await contentfulGraphqlSafe(CtfPersonDocument, v, { preview });
+      return d?.topicPerson ?? null;
     }
     case 'TopicProduct': {
-      const d = await contentfulGraphql(CtfProductDocument, v, { preview });
-      return d.topicProduct ?? null;
+      const d = await contentfulGraphqlSafe(CtfProductDocument, v, { preview });
+      return d?.topicProduct ?? null;
     }
     case 'ComponentProductTable': {
-      const d = await contentfulGraphql(CtfProductTableDocument, v, { preview });
-      return d.componentProductTable ?? null;
+      const d = await contentfulGraphqlSafe(CtfProductTableDocument, v, { preview });
+      return d?.componentProductTable ?? null;
     }
     case 'TopicBusinessInfo': {
-      const d = await contentfulGraphql(CtfBusinessInfoDocument, v, { preview });
-      const b = d.topicBusinessInfo;
+      const d = await contentfulGraphqlSafe(CtfBusinessInfoDocument, v, { preview });
+      const b = d?.topicBusinessInfo;
       if (!b) return null;
       const richTextEmbeddings = await resolveRichTextEmbeddings(b.body?.links, locale, preview);
       return { ...b, richTextEmbeddings } as ResolvedMarketingEntry;
@@ -154,11 +154,11 @@ export async function resolveMarketingEntries(
 }
 
 export async function loadNavigation(locale: string | undefined, preview: boolean) {
-  const data = await contentfulGraphql(CtfNavigationDocument, { locale, preview }, { preview });
-  return data.navigationMenuCollection;
+  const data = await contentfulGraphqlSafe(CtfNavigationDocument, { locale, preview }, { preview });
+  return data?.navigationMenuCollection ?? null;
 }
 
 export async function loadFooter(locale: string | undefined, preview: boolean) {
-  const data = await contentfulGraphql(CtfFooterDocument, { locale, preview }, { preview });
-  return data.footerMenuCollection;
+  const data = await contentfulGraphqlSafe(CtfFooterDocument, { locale, preview }, { preview });
+  return data?.footerMenuCollection ?? null;
 }

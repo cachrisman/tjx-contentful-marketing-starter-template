@@ -1,11 +1,13 @@
 import type { Locale } from '@/lib/i18n/config';
+import { normalizeSlug } from '@/lib/slug-normalize';
 
 /** Public URL path for a Page slug and locale (home slug → locale root). */
 export function pagePath(locale: Locale, slug?: string | null) {
-  if (!slug || slug === 'home') {
+  const s = normalizeSlug(slug ?? null);
+  if (!s || s === 'home') {
     return `/${locale}`;
   }
-  return `/${locale}/${slug}`;
+  return `/${locale}/${s}`;
 }
 
 export function withLocalePath(locale: Locale, path: string) {
@@ -18,6 +20,7 @@ export function withLocalePath(locale: Locale, path: string) {
 
 /** Path relative to locale root for Page slug (used with LocaleLink / withLocalePath). */
 export function hrefForPageSlug(slug?: string | null) {
-  if (!slug || slug === 'home') return '/';
-  return `/${slug}`;
+  const s = normalizeSlug(slug ?? null);
+  if (!s || s === 'home') return '/';
+  return `/${s}`;
 }

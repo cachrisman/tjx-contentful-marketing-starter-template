@@ -8,10 +8,15 @@ import type { ResolvedMarketingEntry } from '@/lib/contentful/resolve-entry';
 export function MarketingSection({
   entry,
   locale,
+  preview,
 }: {
   entry: ResolvedMarketingEntry;
   locale: Locale;
+  preview: boolean;
 }) {
+  if (!preview) {
+    return <MarketingEntryView entry={entry} locale={locale} />;
+  }
   return (
     <LiveMarketingSection entry={entry}>
       {live => <MarketingEntryView entry={live} locale={locale} />}

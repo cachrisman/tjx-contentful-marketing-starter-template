@@ -23,7 +23,7 @@ fragment TextBlockFields on ComponentTextBlock {
   colorPalette
 }
 
-query CtfTextBlock($id: String!, $locale: String, $preview: Boolean) {
+query CtfTextBlock($id: String!, $locale: String, $preview: Boolean) @contentSourceMaps {
   componentTextBlock(id: $id, locale: $locale, preview: $preview) {
     ...TextBlockFields
   }

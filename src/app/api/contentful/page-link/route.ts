@@ -1,7 +1,7 @@
-import { draftMode } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 import { contentfulGraphql } from '@/lib/contentful/graphql-request';
+import { isContentfulPreview } from '@/lib/contentful/preview-request';
 import { CtfRichTextHyperlinkDocument } from '@/lib/contentful/graphql/ctf-richtext.generated';
 
 export async function GET(req: Request) {
@@ -12,13 +12,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Missing id' }, { status: 400 });
   }
 
-  const { isEnabled } = await draftMode();
+  const preview = await isContentfulPreview();
 
   try {
     const data = await contentfulGraphql(
       CtfRichTextHyperlinkDocument,
-      { id, locale, preview: isEnabled },
-      { preview: isEnabled },
+      { id, locale, preview },
+      { preview },
     );
     return NextResponse.json({ page: data.page ?? null });
   } catch (e) {

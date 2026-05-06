@@ -12,7 +12,7 @@ fragment ProductTableFields on ComponentProductTable {
   }
 }
 
-query CtfProductTable($id: String!, $locale: String, $preview: Boolean) {
+query CtfProductTable($id: String!, $locale: String, $preview: Boolean) @contentSourceMaps {
   componentProductTable(id: $id, preview: $preview, locale: $locale) {
     ...ProductTableFields
   }

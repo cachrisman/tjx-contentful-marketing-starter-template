@@ -18,7 +18,7 @@ fragment ProductFields on TopicProduct {
   }
 }
 
-query CtfProduct($id: String!, $locale: String, $preview: Boolean) {
+query CtfProduct($id: String!, $locale: String, $preview: Boolean) @contentSourceMaps {
   topicProduct(id: $id, preview: $preview, locale: $locale) {
     ...ProductFields
   }

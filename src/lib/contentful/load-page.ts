@@ -1,6 +1,7 @@
 import { CtfPageDocument } from '@/lib/contentful/graphql/ctf-page.generated';
 import type { CtfPageFieldsFragment } from '@/lib/contentful/graphql/ctf-page.generated';
-import { contentfulGraphql } from '@/lib/contentful/graphql-request';
+import { contentfulGraphqlSafe } from '@/lib/contentful/graphql-request';
+import { normalizeSlug } from '@/lib/slug-normalize';
 import {
   resolveMarketingEntries,
   resolveMarketingEntry,
@@ -20,11 +21,14 @@ export async function loadPageBySlug(
   locale: string | undefined,
   preview: boolean,
 ): Promise<LoadedPage | null> {
-  const data = await contentfulGraphql(
-    CtfPageDocument,
-    { slug, locale, preview },
-    { preview },
-  );
+  const slugQuery = normalizeSlug(slug);
+  if (slugQuery == null) {
+    return null;
+  }
+  const data = await contentfulGraphqlSafe(CtfPageDocument, { slug: slugQuery, locale, preview }, { preview });
+  if (!data) {
+    return null;
+  }
 
   const page = data.pageCollection?.items?.[0];
   if (!page) {

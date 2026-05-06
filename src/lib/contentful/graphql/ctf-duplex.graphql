@@ -19,7 +19,7 @@ fragment DuplexFields on ComponentDuplex {
   colorPalette
 }
 
-query CtfDuplex($id: String!, $locale: String, $preview: Boolean) {
+query CtfDuplex($id: String!, $locale: String, $preview: Boolean) @contentSourceMaps {
   componentDuplex(id: $id, locale: $locale, preview: $preview) {
     ...DuplexFields
   }

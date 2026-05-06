@@ -25,7 +25,7 @@ fragment BusinessInfoFields on TopicBusinessInfo {
   }
 }
 
-query CtfBusinessInfo($id: String!, $locale: String, $preview: Boolean) {
+query CtfBusinessInfo($id: String!, $locale: String, $preview: Boolean) @contentSourceMaps {
   topicBusinessInfo(id: $id, preview: $preview, locale: $locale) {
     ...BusinessInfoFields
   }

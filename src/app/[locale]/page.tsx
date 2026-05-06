@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
-import { draftMode } from 'next/headers';
 import { notFound } from 'next/navigation';
 
 import { MarketingSection } from '@/components/marketing/marketing-section';
+import { pickGlobalSettingsEntry, loadGlobalSettings } from '@/lib/contentful/global-settings';
 import { loadPageBySlug } from '@/lib/contentful/load-page';
+import { metadataForPage } from '@/lib/contentful/page-metadata';
+import { isContentfulPreview } from '@/lib/contentful/preview-request';
 import { isLocale, type Locale } from '@/lib/i18n/config';
-import { siteConfig } from '@/lib/site-config';
 
 export async function generateMetadata({
   params,
@@ -14,38 +15,21 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale: loc } = await params;
   if (!isLocale(loc)) return {};
-  const { isEnabled } = await draftMode();
-  const data = await loadPageBySlug('home', loc, isEnabled);
-  const page = data?.page;
-  const seo = page?.seo;
-  const title = seo?.title ?? page?.pageName ?? siteConfig.meta.title;
-  const description = seo?.description ?? siteConfig.meta.description;
-  const robots =
-    seo?.noIndex || seo?.noFollow
-      ? {
-          index: seo.noIndex ? false : true,
-          follow: seo.noFollow ? false : true,
-        }
-      : undefined;
-
-  return {
-    title,
-    description,
-    robots,
-    openGraph: {
-      title,
-      description,
-      images: seo?.image?.url ? [{ url: seo.image.url }] : [{ url: siteConfig.meta.image }],
-    },
-  };
+  const preview = await isContentfulPreview();
+  const [data, globalCollection] = await Promise.all([
+    loadPageBySlug('home', loc, preview),
+    loadGlobalSettings(loc, preview),
+  ]);
+  const gs = pickGlobalSettingsEntry(globalCollection);
+  return metadataForPage(data?.page, gs);
 }
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale: loc } = await params;
   if (!isLocale(loc)) notFound();
   const locale = loc as Locale;
-  const { isEnabled } = await draftMode();
-  const data = await loadPageBySlug('home', locale, isEnabled);
+  const preview = await isContentfulPreview();
+  const data = await loadPageBySlug('home', locale, preview);
   if (!data) notFound();
 
   return (
@@ -53,16 +37,16 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       {data.topSection.map(
         (entry, i) =>
           entry && (
-            <MarketingSection key={`top-${entry.sys.id}-${i}`} entry={entry} locale={locale} />
+            <MarketingSection key={`top-${entry.sys.id}-${i}`} entry={entry} locale={locale} preview={preview} />
           ),
       )}
       {data.pageContent && (
-        <MarketingSection entry={data.pageContent} locale={locale} />
+        <MarketingSection entry={data.pageContent} locale={locale} preview={preview} />
       )}
       {data.extraSection.map(
         (entry, i) =>
           entry && (
-            <MarketingSection key={`extra-${entry.sys.id}-${i}`} entry={entry} locale={locale} />
+            <MarketingSection key={`extra-${entry.sys.id}-${i}`} entry={entry} locale={locale} preview={preview} />
           ),
       )}
     </>

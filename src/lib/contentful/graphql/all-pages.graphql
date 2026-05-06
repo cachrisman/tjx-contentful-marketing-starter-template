@@ -1,4 +1,4 @@
-query AllPageSlugs($locale: String, $preview: Boolean) {
+query AllPageSlugs($locale: String, $preview: Boolean) @contentSourceMaps {
   pageCollection(locale: $locale, preview: $preview, limit: 100) {
     items {
       slug

@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import type { ComponentPropsWithoutRef } from 'react';
 
+import { useContentfulInspectorEnabled } from '@/components/contentful/contentful-preview-provider';
 import { LocalePageLink } from '@/components/marketing/locale-link';
 import { RichTextField, type RichTextFieldProps } from '@/components/marketing/richtext';
 import type { Locale } from '@/lib/i18n/config';
@@ -18,6 +19,34 @@ type Props = {
 };
 
 function InspectSpan({
+  entryId,
+  fieldId,
+  children,
+  className,
+  style,
+}: {
+  entryId: string;
+  fieldId: string;
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  const inspectorEnabled = useContentfulInspectorEnabled();
+  if (!inspectorEnabled) {
+    return (
+      <span className={className} style={style}>
+        {children}
+      </span>
+    );
+  }
+  return (
+    <InspectSpanLive entryId={entryId} fieldId={fieldId} className={className} style={style}>
+      {children}
+    </InspectSpanLive>
+  );
+}
+
+function InspectSpanLive({
   entryId,
   fieldId,
   children,
@@ -411,7 +440,10 @@ export function MarketingEntryView({ entry, locale }: Props) {
                   alt={entry.name ?? ''}
                   width={800}
                   height={600}
+                  priority
+                  sizes="(max-width: 768px) 100vw, 50vw"
                   className="w-full rounded-2xl object-cover shadow-lg"
+                  style={{ height: 'auto' }}
                 />
               )}
             </div>

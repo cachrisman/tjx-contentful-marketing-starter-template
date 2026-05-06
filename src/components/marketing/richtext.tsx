@@ -11,6 +11,7 @@ import type { Locale } from '@/lib/i18n/config';
 import type { ResolvedMarketingEntry } from '@/lib/contentful/resolve-entry';
 import type { AssetFieldsFragment } from '@/lib/contentful/graphql/ctf-asset.generated';
 import { LocalePageLink } from '@/components/marketing/locale-link';
+import { sanitizeHyperlinkUri } from '@/lib/slug-normalize';
 
 const MarketingEntryView = dynamic(
   () => import('./marketing-blocks').then(m => ({ default: m.MarketingEntryView })),
@@ -150,6 +151,22 @@ export function RichTextField(props: RichTextFieldProps) {
           {children}
         </EntryHyperlink>
       ),
+      /** URL hyperlinks store `uri` verbatim — paste can inject ZWSP/BOM; entry slug field stays clean. */
+      [INLINES.HYPERLINK]: (node, children) => {
+        const uri = (node.data as { uri?: string }).uri;
+        if (!uri) return <span>{children}</span>;
+        const href = sanitizeHyperlinkUri(uri);
+        const external = /^https?:\/\//i.test(href);
+        return (
+          <a
+            href={href}
+            className="underline hover:opacity-80"
+            {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          >
+            {children}
+          </a>
+        );
+      },
       [BLOCKS.PARAGRAPH]: (_n, children) => (
         <p className="mb-6 text-[1.8rem] leading-relaxed text-[#414D63] last:mb-0">{children}</p>
       ),
