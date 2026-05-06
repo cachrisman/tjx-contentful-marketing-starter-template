@@ -34,6 +34,14 @@ export function ContentfulPreviewProvider({
         enableLiveUpdates={preview}
         debugMode={process.env.NEXT_PUBLIC_CONTENTFUL_LIVE_PREVIEW_DEBUG === '1'}
         targetOrigin={['https://app.contentful.com', 'https://app.eu.contentful.com']}
+        experimental={
+          preview
+            ? {
+                // Hide inspector outlines for fields covered by overlays (e.g. mega menu over page body).
+                hideCoveredElementOutlines: true,
+              }
+            : undefined
+        }
       >
         {children}
       </ContentfulLivePreviewProvider>
