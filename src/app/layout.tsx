@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Red_Hat_Display } from 'next/font/google';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 import { SITE_COLOR_SCHEME_STORAGE_KEY } from '@/lib/theme/site-theme';
 import { siteConfig } from '@/lib/site-config';
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{ __html: SITE_COLOR_SCHEME_BOOTSTRAP }}
         />
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
