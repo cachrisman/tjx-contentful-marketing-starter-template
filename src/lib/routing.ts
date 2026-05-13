@@ -10,6 +10,21 @@ export function pagePath(locale: Locale, slug?: string | null) {
   return `/${locale}/${s}`;
 }
 
+/** Appends a query string from Contentful `urlParameters` (with or without leading `?`). */
+export function pagePathWithUrlParameters(
+  locale: Locale,
+  slug?: string | null,
+  urlParameters?: string | null,
+) {
+  const base = pagePath(locale, slug);
+  const raw = (urlParameters ?? '').trim();
+  if (!raw) {
+    return base;
+  }
+  const q = raw.startsWith('?') ? raw.slice(1) : raw;
+  return base.includes('?') ? `${base}&${q}` : `${base}?${q}`;
+}
+
 export function withLocalePath(locale: Locale, path: string) {
   if (path === '/' || path === '') {
     return `/${locale}`;
