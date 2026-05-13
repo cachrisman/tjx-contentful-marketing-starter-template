@@ -1,0 +1,36 @@
+---
+name: Ninetailed preview bundle gate
+
+on:
+  pull_request:
+    paths:
+      - 'src/components/personalization/**'
+      - 'src/lib/personalization/**'
+      - 'src/proxy.ts'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'scripts/check-preview-bundle.mjs'
+
+jobs:
+  preview-bundle:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Use Node.js
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        run: NODE_ENV=production npm run build
+
+      - name: Verify preview plugin absent from client static output
+        run: npm run check:preview-bundle

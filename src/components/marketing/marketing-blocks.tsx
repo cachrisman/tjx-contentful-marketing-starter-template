@@ -7,6 +7,7 @@ import type { ComponentPropsWithoutRef } from 'react';
 
 import { useContentfulInspectorEnabled } from '@/components/contentful/contentful-preview-provider';
 import { LocalePageLink } from '@/components/marketing/locale-link';
+import { HeroBannerView } from '@/components/marketing/hero-banner-view';
 import { RichTextField, type RichTextFieldProps } from '@/components/marketing/richtext';
 import type { Locale } from '@/lib/i18n/config';
 import type { ProductTableFieldsFragment } from '@/lib/contentful/graphql/ctf-product-table.generated';
@@ -118,57 +119,7 @@ function cfSrc(url: string, w: number) {
 export function MarketingEntryView({ entry, locale }: Props) {
   switch (entry.__typename) {
     case 'ComponentHeroBanner': {
-      const imageStyle = entry.imageStyle ? 'partial' : 'full';
-      const heroFull = entry.heroSize !== false;
-      const bgUrl = entry.image?.url
-        ? cfSrc(entry.image.url, imageStyle === 'partial' ? 1534 : 2400)
-        : undefined;
-      const fullBleedImage = imageStyle === 'full' && Boolean(bgUrl);
-      const paletteSlug = paletteSlugFromContentful(entry.colorPalette);
-
-      return (
-        <section
-          data-section-palette={fullBleedImage ? 'inverse' : paletteSlug}
-          className={clsx(
-            'relative flex w-full overflow-hidden bg-cover bg-center',
-            'bg-[var(--section-bg)] text-[var(--section-fg)]',
-            heroFull ? 'min-h-[calc(100vh-8rem)] md:min-h-[calc(100vh-9rem)]' : 'py-24',
-          )}
-          style={fullBleedImage ? { backgroundImage: `url(${bgUrl})` } : undefined}
-        >
-          {imageStyle === 'partial' && bgUrl && (
-            <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 max-w-[192rem] md:block">
-              <div
-                className="absolute inset-y-0 right-0 w-full bg-cover bg-center"
-                style={{ backgroundImage: `url(${bgUrl})` }}
-              />
-            </div>
-          )}
-          <SectionShell className="relative z-[1] flex max-w-[125.8rem] flex-col py-24 md:py-32">
-            {entry.headline && (
-              <InspectSpan entryId={entry.sys.id} fieldId="headline">
-                <h1 className={clsx('max-w-[44rem] text-[3rem] font-extrabold leading-[1.08] xl:text-[3.8rem]', HEADLINE_CLS)}>
-                  {entry.headline}
-                </h1>
-              </InspectSpan>
-            )}
-            {entry.bodyText?.json && (
-              <div className={clsx('mt-6 max-w-[46.9rem]', TEXT_CLS)}>
-                <InspectSpan entryId={entry.sys.id} fieldId="bodyText">
-                  <RichTextField json={entry.bodyText.json} locale={locale} className="[&_p]:text-[2.5rem]" />
-                </InspectSpan>
-              </div>
-            )}
-            {entry.targetPage && entry.ctaText && (
-              <div className="mt-6">
-                <LocalePageLink locale={locale} slug={entry.targetPage.slug} className={BUTTON_CLS}>
-                  {entry.ctaText}
-                </LocalePageLink>
-              </div>
-            )}
-          </SectionShell>
-        </section>
-      );
+      return <HeroBannerView entry={entry} locale={locale} />;
     }
 
     case 'ComponentDuplex': {

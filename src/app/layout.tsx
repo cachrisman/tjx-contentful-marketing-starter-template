@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Red_Hat_Display } from 'next/font/google';
-import { SpeedInsights } from '@vercel/speed-insights/next';
-import { Analytics } from '@vercel/analytics/next';
+import Script from 'next/script';
 
+import { VercelObservability } from '@/components/layout/vercel-observability';
 import { SITE_COLOR_SCHEME_STORAGE_KEY } from '@/lib/theme/site-theme';
 import { siteConfig } from '@/lib/site-config';
 
@@ -42,13 +42,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={redHat.variable} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col antialiased">
-        <script
-          key="site-color-scheme-bootstrap"
-          dangerouslySetInnerHTML={{ __html: SITE_COLOR_SCHEME_BOOTSTRAP }}
-        />
+        <Script id="site-color-scheme-bootstrap" strategy="beforeInteractive">
+          {SITE_COLOR_SCHEME_BOOTSTRAP}
+        </Script>
         {children}
-        <SpeedInsights />
-        <Analytics />
+        <VercelObservability />
       </body>
     </html>
   );

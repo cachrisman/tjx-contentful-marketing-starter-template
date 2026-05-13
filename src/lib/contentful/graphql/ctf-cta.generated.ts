@@ -1,31 +1,23 @@
 import type * as Types from '../generated/types';
 
 import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
-type CtaTargetPageFragment = { __typename: 'Page', slug?: string | null, pageName?: string | null, sys: { __typename?: 'Sys', id: string }, pageContent?:
-    | { __typename: 'ComponentProductTable', sys: { __typename?: 'Sys', id: string } }
-    | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }
-    | { __typename: 'TopicProduct', sys: { __typename?: 'Sys', id: string } }
-   | null };
-
-export type CtaFieldsFragment = {
-  __typename: 'ComponentCta';
-  headline?: string | null;
-  ctaText?: string | null;
-  urlParameters?: string | null;
-  ctaText2?: string | null;
-  urlParameters2?: string | null;
-  ctaText3?: string | null;
-  urlParameters3?: string | null;
-  ctaText4?: string | null;
-  urlParameters4?: string | null;
-  colorPalette?: string | null;
-  sys: { __typename?: 'Sys'; id: string };
-  subline?: { __typename?: 'ComponentCtaSubline'; json: any } | null;
-  targetPage?: CtaTargetPageFragment | null;
-  targetPage2?: CtaTargetPageFragment | null;
-  targetPage3?: CtaTargetPageFragment | null;
-  targetPage4?: CtaTargetPageFragment | null;
-};
+export type CtaFieldsFragment = { __typename: 'ComponentCta', headline?: string | null, ctaText?: string | null, urlParameters?: string | null, ctaText2?: string | null, urlParameters2?: string | null, ctaText3?: string | null, urlParameters3?: string | null, ctaText4?: string | null, urlParameters4?: string | null, colorPalette?: string | null, sys: { __typename?: 'Sys', id: string }, subline?: { __typename?: 'ComponentCtaSubline', json: any } | null, targetPage?: { __typename: 'Page', slug?: string | null, pageName?: string | null, sys: { __typename?: 'Sys', id: string }, pageContent?:
+      | { __typename: 'ComponentProductTable', sys: { __typename?: 'Sys', id: string } }
+      | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }
+      | { __typename: 'TopicProduct', sys: { __typename?: 'Sys', id: string } }
+     | null } | null, targetPage2?: { __typename: 'Page', slug?: string | null, pageName?: string | null, sys: { __typename?: 'Sys', id: string }, pageContent?:
+      | { __typename: 'ComponentProductTable', sys: { __typename?: 'Sys', id: string } }
+      | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }
+      | { __typename: 'TopicProduct', sys: { __typename?: 'Sys', id: string } }
+     | null } | null, targetPage3?: { __typename: 'Page', slug?: string | null, pageName?: string | null, sys: { __typename?: 'Sys', id: string }, pageContent?:
+      | { __typename: 'ComponentProductTable', sys: { __typename?: 'Sys', id: string } }
+      | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }
+      | { __typename: 'TopicProduct', sys: { __typename?: 'Sys', id: string } }
+     | null } | null, targetPage4?: { __typename: 'Page', slug?: string | null, pageName?: string | null, sys: { __typename?: 'Sys', id: string }, pageContent?:
+      | { __typename: 'ComponentProductTable', sys: { __typename?: 'Sys', id: string } }
+      | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }
+      | { __typename: 'TopicProduct', sys: { __typename?: 'Sys', id: string } }
+     | null } | null };
 
 export type CtfCtaQueryVariables = Types.Exact<{
   id: Types.Scalars['String']['input'];
@@ -34,7 +26,23 @@ export type CtfCtaQueryVariables = Types.Exact<{
 }>;
 
 
-export type CtfCtaQuery = { __typename?: 'Query'; componentCta?: CtaFieldsFragment | null };
+export type CtfCtaQuery = { __typename?: 'Query', componentCta?: { __typename: 'ComponentCta', headline?: string | null, ctaText?: string | null, urlParameters?: string | null, ctaText2?: string | null, urlParameters2?: string | null, ctaText3?: string | null, urlParameters3?: string | null, ctaText4?: string | null, urlParameters4?: string | null, colorPalette?: string | null, sys: { __typename?: 'Sys', id: string }, subline?: { __typename?: 'ComponentCtaSubline', json: any } | null, targetPage?: { __typename: 'Page', slug?: string | null, pageName?: string | null, sys: { __typename?: 'Sys', id: string }, pageContent?:
+        | { __typename: 'ComponentProductTable', sys: { __typename?: 'Sys', id: string } }
+        | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }
+        | { __typename: 'TopicProduct', sys: { __typename?: 'Sys', id: string } }
+       | null } | null, targetPage2?: { __typename: 'Page', slug?: string | null, pageName?: string | null, sys: { __typename?: 'Sys', id: string }, pageContent?:
+        | { __typename: 'ComponentProductTable', sys: { __typename?: 'Sys', id: string } }
+        | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }
+        | { __typename: 'TopicProduct', sys: { __typename?: 'Sys', id: string } }
+       | null } | null, targetPage3?: { __typename: 'Page', slug?: string | null, pageName?: string | null, sys: { __typename?: 'Sys', id: string }, pageContent?:
+        | { __typename: 'ComponentProductTable', sys: { __typename?: 'Sys', id: string } }
+        | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }
+        | { __typename: 'TopicProduct', sys: { __typename?: 'Sys', id: string } }
+       | null } | null, targetPage4?: { __typename: 'Page', slug?: string | null, pageName?: string | null, sys: { __typename?: 'Sys', id: string }, pageContent?:
+        | { __typename: 'ComponentProductTable', sys: { __typename?: 'Sys', id: string } }
+        | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }
+        | { __typename: 'TopicProduct', sys: { __typename?: 'Sys', id: string } }
+       | null } | null } | null };
 
 export const CtaFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CtaFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ComponentCta"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"sys"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"headline"}},{"kind":"Field","name":{"kind":"Name","value":"subline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"json"}}]}},{"kind":"Field","name":{"kind":"Name","value":"ctaText"}},{"kind":"Field","name":{"kind":"Name","value":"targetPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PageLinkFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"urlParameters"}},{"kind":"Field","name":{"kind":"Name","value":"ctaText2"}},{"kind":"Field","name":{"kind":"Name","value":"targetPage2"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PageLinkFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"urlParameters2"}},{"kind":"Field","name":{"kind":"Name","value":"ctaText3"}},{"kind":"Field","name":{"kind":"Name","value":"targetPage3"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PageLinkFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"urlParameters3"}},{"kind":"Field","name":{"kind":"Name","value":"ctaText4"}},{"kind":"Field","name":{"kind":"Name","value":"targetPage4"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PageLinkFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"urlParameters4"}},{"kind":"Field","name":{"kind":"Name","value":"colorPalette"}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PageLinkFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Page"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"slug"}},{"kind":"Field","name":{"kind":"Name","value":"sys"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageName"}},{"kind":"Field","name":{"kind":"Name","value":"pageContent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"preview"},"value":{"kind":"Variable","name":{"kind":"Name","value":"preview"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Entry"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"sys"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}}]} as unknown as DocumentNode<CtaFieldsFragment, unknown>;
 export const CtfCtaDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"CtfCta"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"locale"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"preview"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}],"directives":[{"kind":"Directive","name":{"kind":"Name","value":"contentSourceMaps"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"componentCta"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}},{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"preview"},"value":{"kind":"Variable","name":{"kind":"Name","value":"preview"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CtaFields"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"PageLinkFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Page"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"slug"}},{"kind":"Field","name":{"kind":"Name","value":"sys"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"pageName"}},{"kind":"Field","name":{"kind":"Name","value":"pageContent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"locale"},"value":{"kind":"Variable","name":{"kind":"Name","value":"locale"}}},{"kind":"Argument","name":{"kind":"Name","value":"preview"},"value":{"kind":"Variable","name":{"kind":"Name","value":"preview"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Entry"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"sys"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CtaFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"ComponentCta"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"Field","name":{"kind":"Name","value":"sys"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"headline"}},{"kind":"Field","name":{"kind":"Name","value":"subline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"json"}}]}},{"kind":"Field","name":{"kind":"Name","value":"ctaText"}},{"kind":"Field","name":{"kind":"Name","value":"targetPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PageLinkFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"urlParameters"}},{"kind":"Field","name":{"kind":"Name","value":"ctaText2"}},{"kind":"Field","name":{"kind":"Name","value":"targetPage2"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PageLinkFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"urlParameters2"}},{"kind":"Field","name":{"kind":"Name","value":"ctaText3"}},{"kind":"Field","name":{"kind":"Name","value":"targetPage3"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PageLinkFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"urlParameters3"}},{"kind":"Field","name":{"kind":"Name","value":"ctaText4"}},{"kind":"Field","name":{"kind":"Name","value":"targetPage4"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"PageLinkFields"}}]}},{"kind":"Field","name":{"kind":"Name","value":"urlParameters4"}},{"kind":"Field","name":{"kind":"Name","value":"colorPalette"}}]}}]} as unknown as DocumentNode<CtfCtaQuery, CtfCtaQueryVariables>;

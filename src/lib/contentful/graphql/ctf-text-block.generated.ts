@@ -12,11 +12,15 @@ export type TextBlockFieldsFragment = { __typename: 'ComponentTextBlock', headli
           | { __typename: 'FooterColumn', sys: { __typename?: 'Sys', id: string } }
           | { __typename: 'FooterMenu', sys: { __typename?: 'Sys', id: string } }
           | { __typename: 'GlobalSettings', sys: { __typename?: 'Sys', id: string } }
+          | { __typename: 'ImageWithFocalPoint', sys: { __typename?: 'Sys', id: string } }
           | { __typename: 'MenuGroup', sys: { __typename?: 'Sys', id: string } }
           | { __typename: 'NavigationColumn', sys: { __typename?: 'Sys', id: string } }
           | { __typename: 'NavigationLink', sys: { __typename?: 'Sys', id: string } }
           | { __typename: 'NavigationMenu', sys: { __typename?: 'Sys', id: string } }
           | { __typename: 'NavigationSection', sys: { __typename?: 'Sys', id: string } }
+          | { __typename: 'NtAudience', sys: { __typename?: 'Sys', id: string } }
+          | { __typename: 'NtExperience', sys: { __typename?: 'Sys', id: string } }
+          | { __typename: 'NtMergetag', sys: { __typename?: 'Sys', id: string } }
           | { __typename: 'Page', sys: { __typename?: 'Sys', id: string } }
           | { __typename: 'Seo', sys: { __typename?: 'Sys', id: string } }
           | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }
@@ -43,11 +47,15 @@ export type CtfTextBlockQuery = { __typename?: 'Query', componentTextBlock?: { _
             | { __typename: 'FooterColumn', sys: { __typename?: 'Sys', id: string } }
             | { __typename: 'FooterMenu', sys: { __typename?: 'Sys', id: string } }
             | { __typename: 'GlobalSettings', sys: { __typename?: 'Sys', id: string } }
+            | { __typename: 'ImageWithFocalPoint', sys: { __typename?: 'Sys', id: string } }
             | { __typename: 'MenuGroup', sys: { __typename?: 'Sys', id: string } }
             | { __typename: 'NavigationColumn', sys: { __typename?: 'Sys', id: string } }
             | { __typename: 'NavigationLink', sys: { __typename?: 'Sys', id: string } }
             | { __typename: 'NavigationMenu', sys: { __typename?: 'Sys', id: string } }
             | { __typename: 'NavigationSection', sys: { __typename?: 'Sys', id: string } }
+            | { __typename: 'NtAudience', sys: { __typename?: 'Sys', id: string } }
+            | { __typename: 'NtExperience', sys: { __typename?: 'Sys', id: string } }
+            | { __typename: 'NtMergetag', sys: { __typename?: 'Sys', id: string } }
             | { __typename: 'Page', sys: { __typename?: 'Sys', id: string } }
             | { __typename: 'Seo', sys: { __typename?: 'Sys', id: string } }
             | { __typename: 'TopicBusinessInfo', sys: { __typename?: 'Sys', id: string } }

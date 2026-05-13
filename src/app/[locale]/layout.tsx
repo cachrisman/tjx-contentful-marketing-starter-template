@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
+import { cookies, headers } from 'next/headers';
+
 import { ContentfulPreviewProvider } from '@/components/contentful/contentful-preview-provider';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
+import { NinetailedAppProviders } from '@/components/personalization/ninetailed-app-providers';
 import { SiteThemeStyle } from '@/components/theme/site-theme-style';
 import {
   footerFromGlobalSettings,
@@ -15,6 +18,18 @@ import { isContentfulPreview } from '@/lib/contentful/preview-request';
 import { loadFooter, loadNavigation } from '@/lib/contentful/resolve-entry';
 import { siteConfig } from '@/lib/site-config';
 import { isLocale, locales, type Locale } from '@/lib/i18n/config';
+import {
+  NT_PROXY_PATH_COOKIE,
+  NT_PROXY_PATH_HEADER,
+  NT_SELECTION_COOKIE,
+  NT_SELECTION_HEADER,
+  readSelectionSecret,
+} from '@/lib/personalization/config';
+import { verifySelection } from '@/lib/personalization/selection-header';
+import {
+  loadPreviewAudiencesFromEnv,
+  loadPreviewExperiencesFromEnv,
+} from '@/lib/personalization/preview-plugin-data';
 import { siteThemeFromGlobalSettings } from '@/lib/theme/site-theme';
 
 export async function generateMetadata({
@@ -71,12 +86,45 @@ export default async function LocaleLayout({
   const navigation = navigationFromGlobalSettings(globalCollection) ?? navigationFallback;
   const footer = footerFromGlobalSettings(globalCollection) ?? footerFallback;
 
+  // Phase 0 / hybrid: selection for ESR first paint — prefer proxy-forwarded
+  // headers on the document request; fall back to HttpOnly cookies on follow-up
+  // RSC renders (e.g. client navigations) when headers are absent. Validate POC
+  // with `NODE_ENV=production npm run build && npm run start` + view-source for
+  // the expected hero variant before hydration.
+  const h = await headers();
+  const c = await cookies();
+  const selectionHeader = h.get(NT_SELECTION_HEADER) ?? c.get(NT_SELECTION_COOKIE)?.value;
+  const proxyPathHeader = h.get(NT_PROXY_PATH_HEADER) ?? c.get(NT_PROXY_PATH_COOKIE)?.value;
+  const selection = verifySelection(
+    selectionHeader,
+    readSelectionSecret(),
+    proxyPathHeader,
+  );
+  const experienceVariantsMap = selection?.experienceVariants ?? {};
+
+  const previewExperiences = preview ? loadPreviewExperiencesFromEnv() : [];
+  const previewAudiences = preview ? loadPreviewAudiencesFromEnv() : [];
+
   return (
     <ContentfulPreviewProvider locale={locale} preview={preview} environment={contentfulEnvironment}>
-      <SiteThemeStyle colors={themeColors} />
-      <SiteHeader locale={locale} navigation={navigation} logo={gs?.logo} logoTarget={gs?.logoTarget} />
-      <main className="flex w-full flex-1 flex-col items-stretch">{children}</main>
-      <SiteFooter locale={locale} footer={footer} />
+      <NinetailedAppProviders
+        locale={locale}
+        preview={preview}
+        experienceVariantsMap={experienceVariantsMap}
+        previewExperiences={previewExperiences}
+        previewAudiences={previewAudiences}
+      >
+        <SiteThemeStyle colors={themeColors} />
+        <SiteHeader
+          locale={locale}
+          navigation={navigation}
+          logo={gs?.logo}
+          logoTarget={gs?.logoTarget}
+          preview={preview}
+        />
+        <main className="flex w-full flex-1 flex-col items-stretch">{children}</main>
+        <SiteFooter locale={locale} footer={footer} />
+      </NinetailedAppProviders>
     </ContentfulPreviewProvider>
   );
 }

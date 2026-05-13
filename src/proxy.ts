@@ -4,13 +4,26 @@ import type { NextRequest } from 'next/server';
 import { CONTENTFUL_PREVIEW_HEADER } from '@/lib/contentful/preview-request';
 import { verifyPreviewToken } from '@/lib/contentful/preview-token';
 import { defaultLocale, isLocale } from '@/lib/i18n/config';
+import { NT_PROXY_PATH_HEADER, NT_SELECTION_HEADER } from '@/lib/personalization/config';
+import { runProxyHero, type ProxyHeroResult } from '@/lib/personalization/proxy-hero';
 import { normalizeSlug } from '@/lib/slug-normalize';
 
-export function proxy(request: NextRequest) {
+function applyHeroResult(response: NextResponse, hero: ProxyHeroResult | null) {
+  if (!hero) return response;
+  for (const cookie of hero.cookiesToSet) {
+    response.cookies.set(cookie.name, cookie.value, cookie.options);
+  }
+  return response;
+}
+
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete(CONTENTFUL_PREVIEW_HEADER);
+  // Never trust a client-sent selection header — only the proxy may set it.
+  requestHeaders.delete(NT_SELECTION_HEADER);
+  requestHeaders.delete(NT_PROXY_PATH_HEADER);
 
   const secret = process.env.CONTENTFUL_PREVIEW_SECRET;
   const cfPt = request.nextUrl.searchParams.get('cf_pt');
@@ -32,6 +45,9 @@ export function proxy(request: NextRequest) {
         const url = request.nextUrl.clone();
         url.searchParams.delete('cf_pt');
         requestHeaders.set(CONTENTFUL_PREVIEW_HEADER, '1');
+        // Preview entry via validated `cf_pt` only: skip Ninetailed proxy here so
+        // Contentful iframe + draft tokens stay simple. For variant QA in the
+        // Personalization app, use a non-`cf_pt` preview session or production-like URL.
         return NextResponse.rewrite(url, {
           request: { headers: requestHeaders },
         });
@@ -62,9 +78,20 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${defaultLocale}${pathname}`, request.nextUrl));
   }
 
-  return NextResponse.next({
+  // Phase 3 — Ninetailed hybrid hero personalization. Always defensive: any
+  // failure here returns `null` and the baseline path below renders the
+  // baseline hero unchanged.
+  const hero = await runProxyHero(request);
+  if (hero) {
+    for (const [name, value] of Object.entries(hero.requestHeadersToSet)) {
+      requestHeaders.set(name, value);
+    }
+  }
+
+  const passthrough = NextResponse.next({
     request: { headers: requestHeaders },
   });
+  return applyHeroResult(passthrough, hero);
 }
 
 export const config = {

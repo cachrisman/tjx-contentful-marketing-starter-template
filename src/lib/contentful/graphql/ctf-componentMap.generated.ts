@@ -21,6 +21,8 @@ export type ComponentReferenceFields_FooterMenu_Fragment = { __typename: 'Footer
 
 export type ComponentReferenceFields_GlobalSettings_Fragment = { __typename: 'GlobalSettings', sys: { __typename?: 'Sys', id: string } };
 
+export type ComponentReferenceFields_ImageWithFocalPoint_Fragment = { __typename: 'ImageWithFocalPoint', sys: { __typename?: 'Sys', id: string } };
+
 export type ComponentReferenceFields_MenuGroup_Fragment = { __typename: 'MenuGroup', sys: { __typename?: 'Sys', id: string } };
 
 export type ComponentReferenceFields_NavigationColumn_Fragment = { __typename: 'NavigationColumn', sys: { __typename?: 'Sys', id: string } };
@@ -30,6 +32,12 @@ export type ComponentReferenceFields_NavigationLink_Fragment = { __typename: 'Na
 export type ComponentReferenceFields_NavigationMenu_Fragment = { __typename: 'NavigationMenu', sys: { __typename?: 'Sys', id: string } };
 
 export type ComponentReferenceFields_NavigationSection_Fragment = { __typename: 'NavigationSection', sys: { __typename?: 'Sys', id: string } };
+
+export type ComponentReferenceFields_NtAudience_Fragment = { __typename: 'NtAudience', sys: { __typename?: 'Sys', id: string } };
+
+export type ComponentReferenceFields_NtExperience_Fragment = { __typename: 'NtExperience', sys: { __typename?: 'Sys', id: string } };
+
+export type ComponentReferenceFields_NtMergetag_Fragment = { __typename: 'NtMergetag', sys: { __typename?: 'Sys', id: string } };
 
 export type ComponentReferenceFields_Page_Fragment = { __typename: 'Page', sys: { __typename?: 'Sys', id: string } };
 
@@ -54,11 +62,15 @@ export type ComponentReferenceFieldsFragment =
   | ComponentReferenceFields_FooterColumn_Fragment
   | ComponentReferenceFields_FooterMenu_Fragment
   | ComponentReferenceFields_GlobalSettings_Fragment
+  | ComponentReferenceFields_ImageWithFocalPoint_Fragment
   | ComponentReferenceFields_MenuGroup_Fragment
   | ComponentReferenceFields_NavigationColumn_Fragment
   | ComponentReferenceFields_NavigationLink_Fragment
   | ComponentReferenceFields_NavigationMenu_Fragment
   | ComponentReferenceFields_NavigationSection_Fragment
+  | ComponentReferenceFields_NtAudience_Fragment
+  | ComponentReferenceFields_NtExperience_Fragment
+  | ComponentReferenceFields_NtMergetag_Fragment
   | ComponentReferenceFields_Page_Fragment
   | ComponentReferenceFields_Seo_Fragment
   | ComponentReferenceFields_TopicBusinessInfo_Fragment

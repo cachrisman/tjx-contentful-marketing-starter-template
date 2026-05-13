@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { LocaleLink } from '@/components/marketing/locale-link';
+import { NinetailedPreviewGearButton } from '@/components/personalization/ninetailed-preview-gear-button';
 import { PublicSvgImage } from '@/components/ui/public-svg-image';
 import { SiteThemeToggle } from '@/components/theme/site-theme-toggle';
 import type { AssetFieldsFragment } from '@/lib/contentful/graphql/ctf-asset.generated';
@@ -216,11 +217,14 @@ export function SiteHeader({
   navigation,
   logo,
   logoTarget,
+  preview = false,
 }: {
   locale: Locale;
   navigation: CtfNavigationQuery['navigationMenuCollection'] | null;
   logo?: AssetFieldsFragment | null;
   logoTarget?: LogoTarget | null;
+  /** Contentful draft / preview — show Ninetailed preview gear next to header controls. */
+  preview?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [megaTop, setMegaTop] = useState(0);
@@ -341,11 +345,15 @@ export function SiteHeader({
                 ) : null,
               )}
             </ul>
-            <SiteThemeToggle className="ml-6 hidden shrink-0 self-center lg:flex" />
+            <div className="ml-6 hidden shrink-0 items-center gap-2 self-center lg:flex">
+              <SiteThemeToggle />
+              {preview ? <NinetailedPreviewGearButton /> : null}
+            </div>
           </nav>
 
           <div className="flex items-center gap-4 md:hidden">
             <SiteThemeToggle />
+            {preview ? <NinetailedPreviewGearButton /> : null}
             <button
               type="button"
               className="inline-flex text-[var(--site-text)]"
@@ -362,7 +370,10 @@ export function SiteHeader({
             </button>
           </div>
 
-          <SiteThemeToggle className="hidden shrink-0 md:flex lg:hidden" />
+          <div className="hidden shrink-0 items-center gap-2 md:flex lg:hidden">
+            <SiteThemeToggle />
+            {preview ? <NinetailedPreviewGearButton /> : null}
+          </div>
         </div>
       </header>
 
