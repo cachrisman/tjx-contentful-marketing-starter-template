@@ -12,6 +12,21 @@ fragment CtaFields on ComponentCta {
     ...PageLinkFields
   }
   urlParameters
+  ctaText2
+  targetPage2 {
+    ...PageLinkFields
+  }
+  urlParameters2
+  ctaText3
+  targetPage3 {
+    ...PageLinkFields
+  }
+  urlParameters3
+  ctaText4
+  targetPage4 {
+    ...PageLinkFields
+  }
+  urlParameters4
   colorPalette
 }
 

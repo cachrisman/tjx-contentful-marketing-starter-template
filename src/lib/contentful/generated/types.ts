@@ -446,13 +446,22 @@ export type ComponentCta = Entry & _Node & {
   colorPalette?: Maybe<Scalars['String']['output']>;
   contentfulMetadata: ContentfulMetadata;
   ctaText?: Maybe<Scalars['String']['output']>;
+  ctaText2?: Maybe<Scalars['String']['output']>;
+  ctaText3?: Maybe<Scalars['String']['output']>;
+  ctaText4?: Maybe<Scalars['String']['output']>;
   headline?: Maybe<Scalars['String']['output']>;
   internalName?: Maybe<Scalars['String']['output']>;
   linkedFrom?: Maybe<ComponentCtaLinkingCollections>;
   subline?: Maybe<ComponentCtaSubline>;
   sys: Sys;
   targetPage?: Maybe<ComponentCtaTargetPage>;
+  targetPage2?: Maybe<ComponentCtaTargetPage>;
+  targetPage3?: Maybe<ComponentCtaTargetPage>;
+  targetPage4?: Maybe<ComponentCtaTargetPage>;
   urlParameters?: Maybe<Scalars['String']['output']>;
+  urlParameters2?: Maybe<Scalars['String']['output']>;
+  urlParameters3?: Maybe<Scalars['String']['output']>;
+  urlParameters4?: Maybe<Scalars['String']['output']>;
 };
 
 
