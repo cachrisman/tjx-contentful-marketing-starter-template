@@ -45,3 +45,112 @@ body {
   color: var(--site-text);
   min-height: 100%;
 }
+
+/* ---------------------------------------------------------------------------
+   Section palette tokens
+   --------------------------------------------------------------------------- 
+   `[data-section-palette='…']` on a marketing block resolves to a coherent set
+   of surface, foreground, headline and button colors. Each palette is a pure
+   function of the active site theme (`--site-bg` / `--site-text` /
+   `--site-accent`), so a "Soft" section is tinted-light in light mode and
+   tinted-dark in dark mode — without component code knowing the active scheme.
+
+   The 8 slugs form an emphasis ladder plus a brand-accent option:
+     default → subtle → soft → medium → strong → bold → inverse → accent
+*/
+
+:root,
+[data-section-palette='default'] {
+  --section-bg: var(--site-bg);
+  --section-fg: var(--site-text);
+  --section-headline: var(--site-text);
+  --section-button-bg: var(--site-text);
+  --section-button-fg: var(--site-bg);
+  --section-button-border: transparent;
+  --section-border: color-mix(in srgb, var(--site-text) 12%, transparent);
+}
+
+[data-section-palette='subtle'] {
+  --section-bg: color-mix(in srgb, var(--site-bg) 97%, var(--site-text));
+  --section-fg: var(--site-text);
+  --section-headline: var(--site-text);
+  --section-button-bg: var(--site-text);
+  --section-button-fg: var(--site-bg);
+  --section-button-border: transparent;
+  --section-border: color-mix(in srgb, var(--site-text) 14%, transparent);
+}
+
+[data-section-palette='soft'] {
+  --section-bg: color-mix(in srgb, var(--site-bg) 92%, var(--site-text));
+  --section-fg: var(--site-text);
+  --section-headline: var(--site-text);
+  --section-button-bg: var(--site-text);
+  --section-button-fg: var(--site-bg);
+  --section-button-border: transparent;
+  --section-border: color-mix(in srgb, var(--site-text) 16%, transparent);
+}
+
+[data-section-palette='medium'] {
+  --section-bg: color-mix(in srgb, var(--site-bg) 84%, var(--site-text));
+  --section-fg: var(--site-text);
+  --section-headline: var(--site-text);
+  --section-button-bg: var(--site-text);
+  --section-button-fg: var(--site-bg);
+  --section-button-border: transparent;
+  --section-border: color-mix(in srgb, var(--site-text) 20%, transparent);
+}
+
+[data-section-palette='strong'] {
+  --section-bg: color-mix(in srgb, var(--site-bg) 60%, var(--site-text));
+  --section-fg: var(--site-text);
+  --section-headline: var(--site-text);
+  --section-button-bg: var(--site-text);
+  --section-button-fg: var(--site-bg);
+  --section-button-border: transparent;
+  --section-border: color-mix(in srgb, var(--site-text) 26%, transparent);
+}
+
+[data-section-palette='bold'] {
+  --section-bg: color-mix(in srgb, var(--site-text) 70%, var(--site-bg));
+  --section-fg: var(--site-bg);
+  --section-headline: var(--site-bg);
+  --section-button-bg: var(--site-bg);
+  --section-button-fg: var(--site-text);
+  --section-button-border: transparent;
+  --section-border: color-mix(in srgb, var(--site-bg) 30%, transparent);
+}
+
+[data-section-palette='inverse'] {
+  --section-bg: var(--site-text);
+  --section-fg: var(--site-bg);
+  --section-headline: var(--site-bg);
+  --section-button-bg: var(--site-bg);
+  --section-button-fg: var(--site-text);
+  --section-button-border: transparent;
+  --section-border: color-mix(in srgb, var(--site-bg) 24%, transparent);
+}
+
+[data-section-palette='accent'] {
+  --section-bg: var(--site-accent);
+  --section-fg: #ffffff;
+  --section-headline: #ffffff;
+  --section-button-bg: #ffffff;
+  --section-button-fg: var(--site-accent);
+  --section-button-border: transparent;
+  --section-border: color-mix(in srgb, #ffffff 30%, transparent);
+}
+
+/* color-scheme isolation: inverted surfaces tell the UA to render native
+   widgets (scrollbars, autofill, form controls, etc.) for the surface, not
+   the page. The mapping flips with the active site theme. */
+html[data-color-scheme='light'] [data-section-palette='inverse'],
+html[data-color-scheme='light'] [data-section-palette='bold'] {
+  color-scheme: dark;
+}
+html[data-color-scheme='dark'] [data-section-palette='inverse'],
+html[data-color-scheme='dark'] [data-section-palette='bold'] {
+  color-scheme: light;
+}
+[data-section-palette='accent'] {
+  color-scheme: dark;
+}
