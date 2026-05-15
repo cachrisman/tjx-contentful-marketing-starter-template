@@ -12,18 +12,10 @@
 html {
   font-size: 62.5%;
   color-scheme: light dark;
-  /* Until the bootstrap script sets data-color-scheme, follow the user agent. */
+  /* Until the bootstrap script sets data-color-scheme, default to light (not OS preference). */
   --site-bg: var(--site-theme-light-bg);
   --site-text: var(--site-theme-light-text);
   --site-accent: var(--site-theme-light-accent);
-}
-
-@media (prefers-color-scheme: dark) {
-  html:not([data-color-scheme]) {
-    --site-bg: var(--site-theme-dark-bg);
-    --site-text: var(--site-theme-dark-text);
-    --site-accent: var(--site-theme-dark-accent);
-  }
 }
 
 html[data-color-scheme='light'] {

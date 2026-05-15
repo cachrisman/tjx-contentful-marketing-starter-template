@@ -1,0 +1,60 @@
+fragment NtPreviewExperienceFields on NtExperience {
+  __typename
+  sys {
+    id
+  }
+  ntExperienceId(locale: $locale)
+  ntName(locale: $locale)
+  ntDescription(locale: $locale)
+  ntType(locale: $locale)
+  ntConfig(locale: $locale)
+  ntMetadata(locale: $locale)
+  ntAudience(locale: $locale, preview: $preview) {
+    __typename
+    sys {
+      id
+    }
+    ntAudienceId(locale: $locale)
+    ntName(locale: $locale)
+    ntDescription(locale: $locale)
+  }
+  ntVariantsCollection(locale: $locale, preview: $preview, limit: 100) {
+    items {
+      __typename
+      sys {
+        id
+      }
+    }
+  }
+}
+
+fragment NtPreviewAudienceFields on NtAudience {
+  __typename
+  sys {
+    id
+  }
+  ntAudienceId(locale: $locale)
+  ntName(locale: $locale)
+  ntDescription(locale: $locale)
+}
+
+query NtPreviewExperienceCollection(
+  $locale: String
+  $preview: Boolean!
+  $limit: Int!
+  $skip: Int!
+) {
+  ntExperienceCollection(locale: $locale, preview: $preview, limit: $limit, skip: $skip) {
+    items {
+      ...NtPreviewExperienceFields
+    }
+  }
+}
+
+query NtPreviewAudienceCollection($locale: String, $preview: Boolean!, $limit: Int!, $skip: Int!) {
+  ntAudienceCollection(locale: $locale, preview: $preview, limit: $limit, skip: $skip) {
+    items {
+      ...NtPreviewAudienceFields
+    }
+  }
+}

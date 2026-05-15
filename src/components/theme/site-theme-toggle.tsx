@@ -11,7 +11,7 @@ function readResolvedScheme(): Scheme {
   if (typeof document === 'undefined') return 'light';
   const stored = localStorage.getItem(SITE_COLOR_SCHEME_STORAGE_KEY);
   if (stored === 'light' || stored === 'dark') return stored;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  return 'light';
 }
 
 function SunGlyph({ className }: { className?: string }) {
@@ -41,15 +41,6 @@ export function SiteThemeToggle({ className }: { className?: string }) {
 
   useEffect(() => {
     queueMicrotask(() => setScheme(readResolvedScheme()));
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => {
-      const stored = localStorage.getItem(SITE_COLOR_SCHEME_STORAGE_KEY);
-      if (stored === 'light' || stored === 'dark') return;
-      document.documentElement.dataset.colorScheme = mq.matches ? 'dark' : 'light';
-      setScheme(mq.matches ? 'dark' : 'light');
-    };
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
   }, []);
 
   const toggle = () => {

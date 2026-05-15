@@ -1,3 +1,4 @@
+import { ContentfulInspector } from '@/components/contentful/contentful-inspector';
 import { LocaleLink } from '@/components/marketing/locale-link';
 import { PublicSvgImage } from '@/components/ui/public-svg-image';
 import type { CtfFooterQuery } from '@/lib/contentful/graphql/ctf-footer.generated';
@@ -35,17 +36,35 @@ export function SiteFooter({
             {columns.map(col =>
               col ? (
                 <div key={col.sys.id} className="min-w-[17.2rem] pl-6 md:pl-10">
-                  <p className="mb-2 text-[1.8rem] font-semibold leading-snug md:mb-4">{col.heading}</p>
+                  <ContentfulInspector entryId={col.sys.id} fieldId="heading">
+                    {attrs => (
+                      <p
+                        {...attrs}
+                        className="mb-2 text-[1.8rem] font-semibold leading-snug md:mb-4"
+                      >
+                        {col.heading}
+                      </p>
+                    )}
+                  </ContentfulInspector>
                   {(() => {
                     const row = resolveColumnTitleLinkRow(col.columnTitleLink ?? null);
+                    const rowEntryId =
+                      col.columnTitleLink?.__typename === 'NavigationLink'
+                        ? col.columnTitleLink.sys.id
+                        : undefined;
                     return row ? (
-                      <LocaleLink
-                        locale={locale}
-                        href={hrefForPageSlug(row.slug)}
-                        className="mb-4 block text-[1.6rem] font-normal underline decoration-[var(--site-accent)] underline-offset-4 transition-colors hover:text-[var(--site-accent)]"
-                      >
-                        {row.label}
-                      </LocaleLink>
+                      <ContentfulInspector entryId={rowEntryId} fieldId="linkText">
+                        {attrs => (
+                          <LocaleLink
+                            locale={locale}
+                            href={hrefForPageSlug(row.slug)}
+                            className="mb-4 block text-[1.6rem] font-normal underline decoration-[var(--site-accent)] underline-offset-4 transition-colors hover:text-[var(--site-accent)]"
+                            {...attrs}
+                          >
+                            {row.label}
+                          </LocaleLink>
+                        )}
+                      </ContentfulInspector>
                     ) : null;
                   })()}
                   <ul className="list-none space-y-4 p-0 md:space-y-8">
@@ -54,9 +73,18 @@ export function SiteFooter({
                         p &&
                         p.slug && (
                           <li key={p.sys.id}>
-                            <LocaleLink locale={locale} href={hrefForPageSlug(p.slug)} className={linkSubtleClass}>
-                              {p.pageName}
-                            </LocaleLink>
+                            <ContentfulInspector entryId={p.sys.id} fieldId="pageName">
+                              {attrs => (
+                                <LocaleLink
+                                  locale={locale}
+                                  href={hrefForPageSlug(p.slug)}
+                                  className={linkSubtleClass}
+                                  {...attrs}
+                                >
+                                  {p.pageName}
+                                </LocaleLink>
+                              )}
+                            </ContentfulInspector>
                           </li>
                         ),
                     )}
@@ -71,30 +99,66 @@ export function SiteFooter({
             <ul className="flex list-none gap-4 p-0">
               {menu.twitterLink ? (
                 <li>
-                  <a href={menu.twitterLink} className="text-[var(--site-text)]" aria-label="Twitter">
-                    𝕏
-                  </a>
+                  <ContentfulInspector entryId={menu.sys.id} fieldId="twitterLink">
+                    {attrs => (
+                      <a
+                        {...attrs}
+                        href={menu.twitterLink!}
+                        className="text-[var(--site-text)]"
+                        aria-label="Twitter"
+                      >
+                        𝕏
+                      </a>
+                    )}
+                  </ContentfulInspector>
                 </li>
               ) : null}
               {menu.facebookLink ? (
                 <li>
-                  <a href={menu.facebookLink} className="text-[var(--site-text)]" aria-label="Facebook">
-                    f
-                  </a>
+                  <ContentfulInspector entryId={menu.sys.id} fieldId="facebookLink">
+                    {attrs => (
+                      <a
+                        {...attrs}
+                        href={menu.facebookLink!}
+                        className="text-[var(--site-text)]"
+                        aria-label="Facebook"
+                      >
+                        f
+                      </a>
+                    )}
+                  </ContentfulInspector>
                 </li>
               ) : null}
               {menu.linkedinLink ? (
                 <li>
-                  <a href={menu.linkedinLink} className="text-[var(--site-text)]" aria-label="LinkedIn">
-                    in
-                  </a>
+                  <ContentfulInspector entryId={menu.sys.id} fieldId="linkedinLink">
+                    {attrs => (
+                      <a
+                        {...attrs}
+                        href={menu.linkedinLink!}
+                        className="text-[var(--site-text)]"
+                        aria-label="LinkedIn"
+                      >
+                        in
+                      </a>
+                    )}
+                  </ContentfulInspector>
                 </li>
               ) : null}
               {menu.instagramLink ? (
                 <li>
-                  <a href={menu.instagramLink} className="text-[var(--site-text)]" aria-label="Instagram">
-                    ◎
-                  </a>
+                  <ContentfulInspector entryId={menu.sys.id} fieldId="instagramLink">
+                    {attrs => (
+                      <a
+                        {...attrs}
+                        href={menu.instagramLink!}
+                        className="text-[var(--site-text)]"
+                        aria-label="Instagram"
+                      >
+                        ◎
+                      </a>
+                    )}
+                  </ContentfulInspector>
                 </li>
               ) : null}
             </ul>
@@ -104,7 +168,11 @@ export function SiteFooter({
 
       <div className={footerLegalClass}>
         <div className="mx-auto flex max-w-[126rem] flex-col gap-8 md:flex-row md:items-start md:justify-between">
-          <LocaleLink locale={locale} href={pagePath(locale)} className="inline-block brightness-[1.15]">
+          <LocaleLink
+            locale={locale}
+            href={pagePath(locale)}
+            className="inline-block brightness-[1.15]"
+          >
             <PublicSvgImage
               src="/logo-tagline.svg"
               alt="Logo"
@@ -117,14 +185,18 @@ export function SiteFooter({
           <nav aria-label="Legal" className="flex flex-wrap gap-x-8 gap-y-4">
             {legal.map(p =>
               p && p.slug ? (
-                <LocaleLink
-                  key={p.sys.id}
-                  locale={locale}
-                  href={hrefForPageSlug(p.slug)}
-                  className="text-[1.8rem] text-[color-mix(in_srgb,var(--site-bg)_70%,var(--site-text))] underline-offset-4 hover:underline"
-                >
-                  {p.pageName}
-                </LocaleLink>
+                <ContentfulInspector key={p.sys.id} entryId={p.sys.id} fieldId="pageName">
+                  {attrs => (
+                    <LocaleLink
+                      locale={locale}
+                      href={hrefForPageSlug(p.slug)}
+                      className="text-[1.8rem] text-[color-mix(in_srgb,var(--site-bg)_70%,var(--site-text))] underline-offset-4 hover:underline"
+                      {...attrs}
+                    >
+                      {p.pageName}
+                    </LocaleLink>
+                  )}
+                </ContentfulInspector>
               ) : null,
             )}
           </nav>

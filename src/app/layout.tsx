@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { Red_Hat_Display } from 'next/font/google';
-import Script from 'next/script';
 
 import { VercelObservability } from '@/components/layout/vercel-observability';
 import { SITE_COLOR_SCHEME_STORAGE_KEY } from '@/lib/theme/site-theme';
@@ -12,8 +11,7 @@ const SITE_COLOR_SCHEME_BOOTSTRAP = `
 (function () {
   try {
     var stored = localStorage.getItem(${JSON.stringify(SITE_COLOR_SCHEME_STORAGE_KEY)});
-    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    var mode = stored === 'light' || stored === 'dark' ? stored : prefersDark ? 'dark' : 'light';
+    var mode = stored === 'light' || stored === 'dark' ? stored : 'light';
     document.documentElement.dataset.colorScheme = mode;
   } catch (e) {
     document.documentElement.dataset.colorScheme = 'light';
@@ -42,9 +40,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={redHat.variable} suppressHydrationWarning>
       <body className="flex min-h-screen flex-col antialiased">
-        <Script id="site-color-scheme-bootstrap" strategy="beforeInteractive">
-          {SITE_COLOR_SCHEME_BOOTSTRAP}
-        </Script>
+        <script
+          id="site-color-scheme-bootstrap"
+          dangerouslySetInnerHTML={{ __html: SITE_COLOR_SCHEME_BOOTSTRAP }}
+        />
         {children}
         <VercelObservability />
       </body>

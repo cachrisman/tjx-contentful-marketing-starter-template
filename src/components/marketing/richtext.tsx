@@ -10,6 +10,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Locale } from '@/lib/i18n/config';
 import type { ResolvedMarketingEntry } from '@/lib/contentful/resolve-entry';
 import type { AssetFieldsFragment } from '@/lib/contentful/graphql/ctf-asset.generated';
+import { ContentfulInspector } from '@/components/contentful/contentful-inspector';
 import { LocalePageLink } from '@/components/marketing/locale-link';
 import { sanitizeHyperlinkUri } from '@/lib/slug-normalize';
 
@@ -31,34 +32,36 @@ export type RichTextFieldProps = {
   className?: string;
 };
 
-function EmbeddedAsset({
-  asset,
-  className,
-}: {
-  asset: AssetFieldsFragment;
-  className?: string;
-}) {
+function EmbeddedAsset({ asset, className }: { asset: AssetFieldsFragment; className?: string }) {
   if (!asset.url) return null;
   const w = asset.width ?? 1200;
   const h = asset.height ?? 800;
   if (asset.contentType?.startsWith('image/')) {
     return (
-      <div className={clsx('my-6', className)}>
-        <Image
-          src={asset.url}
-          alt={asset.title ?? ''}
-          width={Math.min(w, 1200)}
-          height={Math.min(h, 900)}
-          className="h-auto max-w-full rounded-md"
-          sizes="(max-width: 768px) 100vw, 900px"
-        />
-      </div>
+      <ContentfulInspector assetId={asset.sys.id} fieldId="file">
+        {attrs => (
+          <div {...attrs} className={clsx('my-6', className)}>
+            <Image
+              src={asset.url!}
+              alt={asset.title ?? ''}
+              width={Math.min(w, 1200)}
+              height={Math.min(h, 900)}
+              className="h-auto max-w-full rounded-md"
+              sizes="(max-width: 768px) 100vw, 900px"
+            />
+          </div>
+        )}
+      </ContentfulInspector>
     );
   }
   return (
-    <a href={asset.url} className={clsx('my-6 inline-block underline', className)}>
-      {asset.title ?? asset.url}
-    </a>
+    <ContentfulInspector assetId={asset.sys.id} fieldId="file">
+      {attrs => (
+        <a {...attrs} href={asset.url!} className={clsx('my-6 inline-block underline', className)}>
+          {asset.title ?? asset.url}
+        </a>
+      )}
+    </ContentfulInspector>
   );
 }
 

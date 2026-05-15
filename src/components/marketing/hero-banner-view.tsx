@@ -1,10 +1,12 @@
 'use client';
 
-import { useContentfulInspectorMode } from '@contentful/live-preview/react';
 import clsx from 'clsx';
 import { forwardRef } from 'react';
 
-import { useContentfulInspectorEnabled } from '@/components/contentful/contentful-preview-provider';
+import {
+  ContentfulInspector,
+  type ContentfulInspectorAttributes,
+} from '@/components/contentful/contentful-inspector';
 import { LocalePageLink } from '@/components/marketing/locale-link';
 import { HeroCtaNinetailedTrack } from '@/components/personalization/hero-cta-ninetailed-track';
 import { RichTextField } from '@/components/marketing/richtext';
@@ -21,56 +23,6 @@ const BUTTON_CLS =
 
 function cfSrc(url: string, w: number) {
   return `${url}?w=${w}&fm=webp&q=80`;
-}
-
-function InspectSpan({
-  entryId,
-  fieldId,
-  children,
-  className,
-  style,
-}: {
-  entryId: string;
-  fieldId: string;
-  children: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  const inspectorEnabled = useContentfulInspectorEnabled();
-  if (!inspectorEnabled) {
-    return (
-      <span className={className} style={style}>
-        {children}
-      </span>
-    );
-  }
-  return (
-    <InspectSpanLive entryId={entryId} fieldId={fieldId} className={className} style={style}>
-      {children}
-    </InspectSpanLive>
-  );
-}
-
-function InspectSpanLive({
-  entryId,
-  fieldId,
-  children,
-  className,
-  style,
-}: {
-  entryId: string;
-  fieldId: string;
-  children: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  const inspector = useContentfulInspectorMode({ entryId });
-  const attrs = inspector({ fieldId }) ?? {};
-  return (
-    <span className={className} style={style} {...attrs}>
-      {children}
-    </span>
-  );
 }
 
 function SectionShell({
@@ -91,65 +43,108 @@ export const HeroBannerView = forwardRef<
   HTMLElement,
   { entry: HeroBannerEntry; locale: Locale; ctaTracking?: boolean }
 >(function HeroBannerView({ entry, locale, ctaTracking = false }, ref) {
-    const imageStyle = entry.imageStyle ? 'partial' : 'full';
-    const heroFull = entry.heroSize !== false;
-    const bgUrl = entry.image?.url ? cfSrc(entry.image.url, imageStyle === 'partial' ? 1534 : 2400) : undefined;
-    const fullBleedImage = imageStyle === 'full' && Boolean(bgUrl);
-    const paletteSlug: PaletteSlug | undefined = fullBleedImage ? 'inverse' : paletteSlugFromContentful(entry.colorPalette);
+  const imageStyle = entry.imageStyle ? 'partial' : 'full';
+  const heroFull = entry.heroSize !== false;
+  const bgUrl = entry.image?.url
+    ? cfSrc(entry.image.url, imageStyle === 'partial' ? 1534 : 2400)
+    : undefined;
+  const fullBleedImage = imageStyle === 'full' && Boolean(bgUrl);
+  const paletteSlug: PaletteSlug | undefined = fullBleedImage
+    ? 'inverse'
+    : paletteSlugFromContentful(entry.colorPalette);
 
-    return (
-      <section
-        ref={ref as React.Ref<HTMLDivElement>}
-        data-section-palette={paletteSlug}
-        className={clsx(
-          'relative flex w-full overflow-hidden bg-cover bg-center',
-          'bg-[var(--section-bg)] text-[var(--section-fg)]',
-          heroFull ? 'min-h-[calc(100vh-8rem)] md:min-h-[calc(100vh-9rem)]' : 'py-24',
-        )}
-        style={fullBleedImage ? { backgroundImage: `url(${bgUrl})` } : undefined}
-      >
-        {imageStyle === 'partial' && bgUrl && (
-          <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 max-w-[192rem] md:block">
-            <div
-              className="absolute inset-y-0 right-0 w-full bg-cover bg-center"
-              style={{ backgroundImage: `url(${bgUrl})` }}
-            />
-          </div>
-        )}
-        <SectionShell className="relative z-[1] flex max-w-[125.8rem] flex-col py-24 md:py-32">
-          {entry.headline && (
-            <InspectSpan entryId={entry.sys.id} fieldId="headline">
-              <h1 className={clsx('max-w-[44rem] text-[3rem] font-extrabold leading-[1.08] xl:text-[3.8rem]', HEADLINE_CLS)}>
+  const section = (imageAttrs: ContentfulInspectorAttributes) => (
+    <section
+      ref={ref as React.Ref<HTMLDivElement>}
+      {...(fullBleedImage ? imageAttrs : {})}
+      data-section-palette={paletteSlug}
+      className={clsx(
+        'relative flex w-full overflow-hidden bg-cover bg-center',
+        'bg-[var(--section-bg)] text-[var(--section-fg)]',
+        heroFull ? 'min-h-[calc(100vh-8rem)] md:min-h-[calc(100vh-9rem)]' : 'py-24',
+      )}
+      style={fullBleedImage ? { backgroundImage: `url(${bgUrl})` } : undefined}
+    >
+      {imageStyle === 'partial' && bgUrl && (
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 max-w-[192rem] md:block">
+          <ContentfulInspector entryId={entry.sys.id} fieldId="image">
+            {attrs => (
+              <div
+                {...attrs}
+                className="absolute inset-y-0 right-0 w-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${bgUrl})` }}
+              />
+            )}
+          </ContentfulInspector>
+        </div>
+      )}
+      <SectionShell className="relative z-[1] flex max-w-[125.8rem] flex-col py-24 md:py-32">
+        {entry.headline && (
+          <ContentfulInspector entryId={entry.sys.id} fieldId="headline">
+            {attrs => (
+              <h1
+                {...attrs}
+                className={clsx(
+                  'max-w-[44rem] text-[3rem] font-extrabold leading-[1.08] xl:text-[3.8rem]',
+                  HEADLINE_CLS,
+                )}
+              >
                 {entry.headline}
               </h1>
-            </InspectSpan>
-          )}
-          {entry.bodyText?.json && (
-            <div className={clsx('mt-6 max-w-[46.9rem]', TEXT_CLS)}>
-              <InspectSpan entryId={entry.sys.id} fieldId="bodyText">
-                <RichTextField json={entry.bodyText.json} locale={locale} className="[&_p]:text-[2.5rem]" />
-              </InspectSpan>
-            </div>
-          )}
-          {entry.targetPage && entry.ctaText && (
-            <div className="mt-6">
-              {ctaTracking ? (
-                <HeroCtaNinetailedTrack
+            )}
+          </ContentfulInspector>
+        )}
+        {entry.bodyText?.json && (
+          <ContentfulInspector entryId={entry.sys.id} fieldId="bodyText">
+            {attrs => (
+              <div {...attrs} className={clsx('mt-6 max-w-[46.9rem]', TEXT_CLS)}>
+                <RichTextField
+                  json={entry.bodyText!.json}
                   locale={locale}
-                  slug={entry.targetPage.slug!}
-                  ctaText={entry.ctaText!}
-                  heroEntryId={entry.sys.id}
-                  className={BUTTON_CLS}
+                  className="[&_p]:text-[2.5rem]"
                 />
-              ) : (
-                <LocalePageLink locale={locale} slug={entry.targetPage.slug} className={BUTTON_CLS}>
-                  {entry.ctaText}
-                </LocalePageLink>
+              </div>
+            )}
+          </ContentfulInspector>
+        )}
+        {entry.targetPage && entry.ctaText && (
+          <div className="mt-6">
+            <ContentfulInspector entryId={entry.sys.id} fieldId="ctaText">
+              {attrs => (
+                <span {...attrs} className="inline-block">
+                  {ctaTracking ? (
+                    <HeroCtaNinetailedTrack
+                      locale={locale}
+                      slug={entry.targetPage!.slug!}
+                      ctaText={entry.ctaText!}
+                      heroEntryId={entry.sys.id}
+                      className={BUTTON_CLS}
+                    />
+                  ) : (
+                    <LocalePageLink
+                      locale={locale}
+                      slug={entry.targetPage!.slug}
+                      className={BUTTON_CLS}
+                    >
+                      {entry.ctaText}
+                    </LocalePageLink>
+                  )}
+                </span>
               )}
-            </div>
-          )}
-        </SectionShell>
-      </section>
-    );
-  },
-);
+            </ContentfulInspector>
+          </div>
+        )}
+      </SectionShell>
+    </section>
+  );
+
+  if (!fullBleedImage) {
+    return section({});
+  }
+
+  return (
+    <ContentfulInspector entryId={entry.sys.id} fieldId="image">
+      {attrs => section(attrs)}
+    </ContentfulInspector>
+  );
+});

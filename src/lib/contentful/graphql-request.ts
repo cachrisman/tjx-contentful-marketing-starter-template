@@ -19,7 +19,16 @@ const graphqlEndpoint = () => {
 
 export type GraphqlRequestOptions = {
   preview: boolean;
+  allowGraphqlErrors?: boolean;
 };
+
+type ContentfulGraphqlError = {
+  message: string;
+};
+
+function formatGraphqlErrors(errors: ContentfulGraphqlError[] | undefined): string {
+  return errors?.map(e => e.message).join('; ') ?? '';
+}
 
 export async function contentfulGraphql<TResult, TVariables extends Record<string, unknown>>(
   document: TypedDocumentNode<TResult, TVariables>,
@@ -51,20 +60,24 @@ export async function contentfulGraphql<TResult, TVariables extends Record<strin
 
   const json = (await res.json()) as {
     data?: TResult;
-    errors?: { message: string }[];
+    errors?: ContentfulGraphqlError[];
     extensions?: unknown;
     message?: string;
   };
 
   if (!res.ok) {
     const hint =
-      json.errors?.map(e => e.message).join('; ') ||
+      formatGraphqlErrors(json.errors) ||
       (typeof json.message === 'string' ? json.message : JSON.stringify(json).slice(0, 500));
     throw new Error(`Contentful GraphQL HTTP ${res.status}${hint ? `: ${hint}` : ''}`);
   }
 
   if (json.errors?.length) {
-    throw new Error(json.errors.map(e => e.message).join('; '));
+    const message = formatGraphqlErrors(json.errors);
+    if (!opts.allowGraphqlErrors || json.data === undefined) {
+      throw new Error(message);
+    }
+    console.warn(`[contentful] GraphQL request returned partial data: ${message}`);
   }
 
   if (json.data === undefined) {
@@ -96,14 +109,18 @@ export async function contentfulGraphql<TResult, TVariables extends Record<strin
   return json.data;
 }
 
-/** Same as {@link contentfulGraphql} but returns `null` on HTTP/GraphQL failures instead of throwing. */
+/**
+ * Same as {@link contentfulGraphql}, but tolerates Contentful field-level GraphQL
+ * errors when usable partial data is present. This keeps one broken reference from
+ * turning an otherwise renderable page or component into a 404.
+ */
 export async function contentfulGraphqlSafe<TResult, TVariables extends Record<string, unknown>>(
   document: TypedDocumentNode<TResult, TVariables>,
   variables: TVariables,
   opts: GraphqlRequestOptions,
 ): Promise<TResult | null> {
   try {
-    return await contentfulGraphql(document, variables, opts);
+    return await contentfulGraphql(document, variables, { ...opts, allowGraphqlErrors: true });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.warn(`[contentful] GraphQL request failed: ${msg}`);

@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_SITE_URL: siteUrl,
     NEXT_PUBLIC_CONTENTFUL_SPACE_ID: process.env.CONTENTFUL_SPACE_ID ?? '',
+    /** Used client-side for Preview plugin “open in Contentful” links (must match GraphQL). */
+    NEXT_PUBLIC_CONTENTFUL_ENVIRONMENT: process.env.CONTENTFUL_ENVIRONMENT?.trim() || 'master',
   },
   images: {
     remotePatterns: [

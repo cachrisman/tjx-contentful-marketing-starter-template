@@ -19,6 +19,21 @@ import {
   readPublicEnvironment,
   readSelectionSecret,
 } from '@/lib/personalization/config';
+
+/** Duplicated from `preview-request` so this module stays free of `next/headers` imports. */
+const CF_PREVIEW_ACTIVE_HEADER = 'x-cf-preview-active';
+
+/**
+ * Draft / Contentful preview sessions must run a client `ninetailed.page()` with
+ * `preview: true` on the SDK. The hybrid proxy uses its own `upsertProfile` with
+ * `preview` aligned to this flag; when true we **omit** `nt_initial_page_handled`
+ * so `NinetailedTrackPages` does not skip the initial `page()` call.
+ */
+function shouldUseNinetailedPreviewExperienceApi(request: NextRequest): boolean {
+  if (request.headers.get(CF_PREVIEW_ACTIVE_HEADER) === '1') return true;
+  if (request.cookies.get('__prerender_bypass')?.value) return true;
+  return false;
+}
 import { matchHeroRoute } from '@/lib/personalization/hero-allowlist';
 import { isPersonalizationSlug } from '@/lib/personalization/proxy-route';
 import { signSelection } from '@/lib/personalization/selection-header';
@@ -98,6 +113,7 @@ export async function runProxyHero(request: NextRequest): Promise<ProxyHeroResul
 
   const environment = readPublicEnvironment();
   const timeoutMs = readProxyTimeoutMs();
+  const experiencePreview = shouldUseNinetailedPreviewExperienceApi(request);
   const anonymousId = readAnonymousCookie(request) ?? randomUUID();
   const isSecure = request.nextUrl.protocol === 'https:';
 
@@ -128,7 +144,7 @@ export async function runProxyHero(request: NextRequest): Promise<ProxyHeroResul
   const api = new NinetailedApiClient({
     clientId,
     environment: environment || undefined,
-    preview: false,
+    preview: experiencePreview,
     url: readExperienceApiUrl(),
   });
 
@@ -170,54 +186,58 @@ export async function runProxyHero(request: NextRequest): Promise<ProxyHeroResul
     secret,
   );
 
+  const cookiesToSet: ProxyHeroResult['cookiesToSet'] = [
+    {
+      name: NT_ANONYMOUS_ID_COOKIE,
+      value: profileId,
+      options: {
+        path: '/',
+        sameSite: 'lax',
+        secure: isSecure,
+        maxAge: 60 * 60 * 24 * 365,
+      },
+    },
+    {
+      name: NT_SELECTION_COOKIE,
+      value: selectionToken,
+      options: {
+        path: '/',
+        sameSite: 'lax',
+        httpOnly: true,
+        secure: isSecure,
+        maxAge: 60,
+      },
+    },
+    {
+      name: NT_PROXY_PATH_COOKIE,
+      value: pathname,
+      options: {
+        path: '/',
+        sameSite: 'lax',
+        httpOnly: true,
+        secure: isSecure,
+        maxAge: 60,
+      },
+    },
+  ];
+  if (!experiencePreview) {
+    cookiesToSet.splice(1, 0, {
+      name: NT_INITIAL_PAGE_HANDLED_COOKIE,
+      value: '1',
+      options: {
+        path: '/',
+        sameSite: 'lax',
+        secure: isSecure,
+        maxAge: 60,
+      },
+    });
+  }
+
   return {
     requestHeadersToSet: {
       [NT_SELECTION_HEADER]: selectionToken,
       [NT_PROXY_PATH_HEADER]: pathname,
     },
-    cookiesToSet: [
-      {
-        name: NT_ANONYMOUS_ID_COOKIE,
-        value: profileId,
-        options: {
-          path: '/',
-          sameSite: 'lax',
-          secure: isSecure,
-          maxAge: 60 * 60 * 24 * 365,
-        },
-      },
-      {
-        name: NT_INITIAL_PAGE_HANDLED_COOKIE,
-        value: '1',
-        options: {
-          path: '/',
-          sameSite: 'lax',
-          secure: isSecure,
-          maxAge: 60,
-        },
-      },
-      {
-        name: NT_SELECTION_COOKIE,
-        value: selectionToken,
-        options: {
-          path: '/',
-          sameSite: 'lax',
-          httpOnly: true,
-          secure: isSecure,
-          maxAge: 60,
-        },
-      },
-      {
-        name: NT_PROXY_PATH_COOKIE,
-        value: pathname,
-        options: {
-          path: '/',
-          sameSite: 'lax',
-          httpOnly: true,
-          secure: isSecure,
-          maxAge: 60,
-        },
-      },
-    ],
+    cookiesToSet,
   };
 }

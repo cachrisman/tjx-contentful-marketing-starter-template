@@ -11,9 +11,10 @@ import { NINETAILED_ANONYMOUS_ID_COOKIE } from '@ninetailed/experience.js-shared
 export const NT_ANONYMOUS_ID_COOKIE = NINETAILED_ANONYMOUS_ID_COOKIE;
 
 /**
- * Sentinel set by `src/proxy.ts` ONLY when it actually performed the initial
- * Experience `page` event for an allowlisted hero request. Read by the client
- * `TrackPages` component to skip exactly one initial `page()` call (Phase 1.D).
+ * Sentinel set by `src/proxy.ts` when the hybrid hero proxy performed the initial
+ * Experience `page` **and** the document is not a draft/preview session (those
+ * omit the cookie so the client runs `page()` with `preview: true`). Read by
+ * `TrackPages` to skip exactly one initial `page()` call.
  *
  * Non-HttpOnly so the browser can read it for the skip handshake. `SameSite=Lax`,
  * short `Max-Age`. `Secure` is added on HTTPS by the proxy.

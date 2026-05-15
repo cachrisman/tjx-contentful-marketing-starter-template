@@ -4,14 +4,22 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { ContentfulInspector } from '@/components/contentful/contentful-inspector';
 import { LocaleLink } from '@/components/marketing/locale-link';
-import { NinetailedPreviewGearButton } from '@/components/personalization/ninetailed-preview-gear-button';
+import { PreviewGearMenu } from '@/components/personalization/preview-gear-menu';
 import { PublicSvgImage } from '@/components/ui/public-svg-image';
 import { SiteThemeToggle } from '@/components/theme/site-theme-toggle';
 import type { AssetFieldsFragment } from '@/lib/contentful/graphql/ctf-asset.generated';
 import type { CtfGlobalSettingsQuery } from '@/lib/contentful/graphql/ctf-global-settings.generated';
-import type { CtfNavigationQuery, NavigationSectionFieldsFragment } from '@/lib/contentful/graphql/ctf-navigation.generated';
-import { contentfulAssetUrl, contentfulImageSrc, isRasterImageAsset } from '@/lib/contentful/asset-src';
+import type {
+  CtfNavigationQuery,
+  NavigationSectionFieldsFragment,
+} from '@/lib/contentful/graphql/ctf-navigation.generated';
+import {
+  contentfulAssetUrl,
+  contentfulImageSrc,
+  isRasterImageAsset,
+} from '@/lib/contentful/asset-src';
 import type { Locale } from '@/lib/i18n/config';
 import { resolveColumnTitleLinkRow } from '@/lib/navigation/column-title-link';
 import { hrefForPageSlug, pagePath } from '@/lib/routing';
@@ -34,7 +42,8 @@ function firstRasterFromFeaturedPage(
   const items = link?.topSectionCollection?.items ?? [];
   for (const item of items) {
     if (!item) continue;
-    if (item.__typename !== 'ComponentHeroBanner' && item.__typename !== 'ComponentDuplex') continue;
+    if (item.__typename !== 'ComponentHeroBanner' && item.__typename !== 'ComponentDuplex')
+      continue;
     const image = item.image;
     if (image?.url && isRasterImageAsset(image.contentType, image.url)) return image;
   }
@@ -70,21 +79,37 @@ function resolveFeaturedVisual(section: NavigationSectionFieldsFragment): {
 function MegaMenuColumn({ locale, column }: { locale: Locale; column: NavColumn }) {
   if (!column) return null;
   const viewAll = resolveColumnTitleLinkRow(column.columnTitleLink ?? null);
+  const viewAllEntryId =
+    column.columnTitleLink?.__typename === 'NavigationLink'
+      ? column.columnTitleLink.sys.id
+      : undefined;
   const links = column.linksCollection?.items?.filter(Boolean) ?? [];
 
   return (
     <div className="min-w-0 max-w-[17rem]">
-      <p className="mb-2.5 text-[1.1rem] font-bold uppercase leading-snug tracking-[0.07em] text-[color-mix(in_srgb,var(--site-text)_78%,var(--site-bg))] break-words">
-        {column.heading}
-      </p>
+      <ContentfulInspector entryId={column.sys.id} fieldId="heading">
+        {attrs => (
+          <p
+            {...attrs}
+            className="mb-2.5 break-words text-[1.1rem] font-bold uppercase leading-snug tracking-[0.07em] text-[color-mix(in_srgb,var(--site-text)_78%,var(--site-bg))]"
+          >
+            {column.heading}
+          </p>
+        )}
+      </ContentfulInspector>
       {viewAll ? (
-        <LocaleLink
-          locale={locale}
-          href={hrefForPageSlug(viewAll.slug)}
-          className="mb-3 block break-words text-[1.35rem] font-semibold underline decoration-[var(--site-accent)] decoration-2 underline-offset-[5px] transition-colors hover:text-[var(--site-accent)]"
-        >
-          {viewAll.label}
-        </LocaleLink>
+        <ContentfulInspector entryId={viewAllEntryId} fieldId="linkText">
+          {attrs => (
+            <LocaleLink
+              locale={locale}
+              href={hrefForPageSlug(viewAll.slug)}
+              className="mb-3 block break-words text-[1.35rem] font-semibold underline decoration-[var(--site-accent)] decoration-2 underline-offset-[5px] transition-colors hover:text-[var(--site-accent)]"
+              {...attrs}
+            >
+              {viewAll.label}
+            </LocaleLink>
+          )}
+        </ContentfulInspector>
       ) : null}
       <ul className="m-0 list-none space-y-1.5 p-0">
         {links.map(
@@ -92,13 +117,18 @@ function MegaMenuColumn({ locale, column }: { locale: Locale; column: NavColumn 
             page &&
             page.slug && (
               <li key={page.sys.id}>
-                <LocaleLink
-                  locale={locale}
-                  href={hrefForPageSlug(page.slug)}
-                  className="inline-block break-words text-[1.4rem] font-normal text-[var(--site-text)] transition-[color,transform] duration-200 ease-out hover:text-[var(--site-accent)] hover:-translate-y-0.5"
-                >
-                  {page.pageName}
-                </LocaleLink>
+                <ContentfulInspector entryId={page.sys.id} fieldId="pageName">
+                  {attrs => (
+                    <LocaleLink
+                      locale={locale}
+                      href={hrefForPageSlug(page.slug)}
+                      className="inline-block break-words text-[1.4rem] font-normal text-[var(--site-text)] transition-[color,transform] duration-200 ease-out hover:-translate-y-0.5 hover:text-[var(--site-accent)]"
+                      {...attrs}
+                    >
+                      {page.pageName}
+                    </LocaleLink>
+                  )}
+                </ContentfulInspector>
               </li>
             ),
         )}
@@ -127,13 +157,18 @@ function FeaturedPromo({
 
   if (!rasterSrc && !vectorSrc && href && link?.pageName) {
     return (
-      <LocaleLink
-        locale={locale}
-        href={href}
-        className="mt-1 block text-[1.45rem] font-semibold text-[var(--site-accent)] underline decoration-[var(--site-accent)] underline-offset-4"
-      >
-        {link.pageName}
-      </LocaleLink>
+      <ContentfulInspector entryId={link.sys.id} fieldId="pageName">
+        {attrs => (
+          <LocaleLink
+            locale={locale}
+            href={href}
+            className="mt-1 block text-[1.45rem] font-semibold text-[var(--site-accent)] underline decoration-[var(--site-accent)] underline-offset-4"
+            {...attrs}
+          >
+            {link.pageName}
+          </LocaleLink>
+        )}
+      </ContentfulInspector>
     );
   }
 
@@ -143,26 +178,57 @@ function FeaturedPromo({
         Featured
       </p>
       {rasterSrc ? (
-        <Image
-          src={rasterSrc}
-          alt={alt}
-          width={raster?.width ?? 360}
-          height={raster?.height ?? 240}
-          className="aspect-[4/3] h-auto w-full rounded-lg object-cover shadow-[0_4px_14px_rgba(0,0,0,0.1)] ring-1 ring-[color-mix(in_srgb,var(--site-accent)_28%,transparent)]"
-          sizes="(min-width: 1280px) 320px, 260px"
-        />
+        <ContentfulInspector
+          entryId={raster === section.featuredImage ? section.sys.id : undefined}
+          assetId={raster === section.featuredImage ? undefined : raster?.sys.id}
+          fieldId={raster === section.featuredImage ? 'featuredImage' : 'file'}
+        >
+          {attrs => (
+            <div
+              {...attrs}
+              className="aspect-[4/3] w-full overflow-hidden rounded-lg shadow-[0_4px_14px_rgba(0,0,0,0.1)] ring-1 ring-[color-mix(in_srgb,var(--site-accent)_28%,transparent)]"
+            >
+              <Image
+                src={rasterSrc}
+                alt={alt}
+                width={raster?.width ?? 360}
+                height={raster?.height ?? 240}
+                className="h-full w-full object-cover"
+                sizes="(min-width: 1280px) 320px, 260px"
+              />
+            </div>
+          )}
+        </ContentfulInspector>
       ) : vectorSrc ? (
-        // eslint-disable-next-line @next/next/no-img-element -- SVG / non-raster featured overrides
-        <img
-          src={vectorSrc}
-          alt={alt}
-          width={vectorFallback?.width ?? 320}
-          height={vectorFallback?.height ?? 220}
-          className="h-auto w-full rounded-lg object-contain object-left shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
-        />
+        <ContentfulInspector entryId={section.sys.id} fieldId="featuredImage">
+          {attrs => (
+            <div
+              {...attrs}
+              className="h-auto w-full rounded-lg object-contain object-left shadow-[0_4px_14px_rgba(0,0,0,0.08)]"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- SVG / non-raster featured overrides */}
+              <img
+                src={vectorSrc}
+                alt={alt}
+                width={vectorFallback?.width ?? 320}
+                height={vectorFallback?.height ?? 220}
+                className="h-auto w-full rounded-lg object-contain object-left"
+              />
+            </div>
+          )}
+        </ContentfulInspector>
       ) : null}
       {link?.pageName ? (
-        <p className="mt-3 text-[1.45rem] font-semibold leading-snug text-[var(--site-text)]">{link.pageName}</p>
+        <ContentfulInspector entryId={link.sys.id} fieldId="pageName">
+          {attrs => (
+            <p
+              {...attrs}
+              className="mt-3 text-[1.45rem] font-semibold leading-snug text-[var(--site-text)]"
+            >
+              {link.pageName}
+            </p>
+          )}
+        </ContentfulInspector>
       ) : null}
     </>
   );
@@ -203,13 +269,25 @@ function SectionTabLabel({
 
   if (slug) {
     return (
-      <LocaleLink locale={locale} href={hrefForPageSlug(slug)} className={className}>
-        {label}
-      </LocaleLink>
+      <ContentfulInspector entryId={section.sys.id} fieldId="label">
+        {attrs => (
+          <LocaleLink locale={locale} href={hrefForPageSlug(slug)} className={className} {...attrs}>
+            {label}
+          </LocaleLink>
+        )}
+      </ContentfulInspector>
     );
   }
 
-  return <span className={className}>{label}</span>;
+  return (
+    <ContentfulInspector entryId={section.sys.id} fieldId="label">
+      {attrs => (
+        <span {...attrs} className={className}>
+          {label}
+        </span>
+      )}
+    </ContentfulInspector>
+  );
 }
 
 export function SiteHeader({
@@ -218,13 +296,16 @@ export function SiteHeader({
   logo,
   logoTarget,
   preview = false,
+  pocPreviewToggle = false,
 }: {
   locale: Locale;
   navigation: CtfNavigationQuery['navigationMenuCollection'] | null;
   logo?: AssetFieldsFragment | null;
   logoTarget?: LogoTarget | null;
-  /** Contentful draft / preview — show Ninetailed preview gear next to header controls. */
+  /** Contentful draft / preview — drives preview tools and draft data in the gear menu. */
   preview?: boolean;
+  /** When true, `/api/draft/enable` accepts requests without `secret` (POC / demos only). */
+  pocPreviewToggle?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [megaTop, setMegaTop] = useState(0);
@@ -291,7 +372,9 @@ export function SiteHeader({
   const logoAlt = logo?.title?.trim() || '';
 
   const megaMaxHeight =
-    megaTop > 0 ? `min(72vh, calc(100vh - ${Math.ceil(megaTop)}px - 12px))` : 'min(72vh, calc(100vh - 10rem))';
+    megaTop > 0
+      ? `min(72vh, calc(100vh - ${Math.ceil(megaTop)}px - 12px))`
+      : 'min(72vh, calc(100vh - 10rem))';
 
   return (
     <>
@@ -300,17 +383,28 @@ export function SiteHeader({
         className="sticky top-0 z-40 bg-[var(--site-bg)] text-[var(--site-text)] shadow-[0_2px_6px_rgba(0,0,0,0.13)]"
       >
         <div className="mx-auto flex h-20 max-w-[126rem] items-center justify-between gap-4 px-6 md:h-[9rem] md:px-12">
-          <LocaleLink locale={locale} href={logoHref} title="Homepage" className="block w-[113px] shrink-0">
+          <LocaleLink
+            locale={locale}
+            href={logoHref}
+            title="Homepage"
+            className="block w-[113px] shrink-0"
+          >
             {logoSrc ? (
-              <Image
-                src={logoSrc}
-                alt={logoAlt}
-                width={logo?.width ?? 113}
-                height={logo?.height ?? 48}
-                className="h-auto max-h-[4.8rem] w-auto max-w-[113px] object-contain object-left"
-                sizes="113px"
-                priority
-              />
+              <ContentfulInspector assetId={logo?.sys.id} fieldId="file">
+                {attrs => (
+                  <span {...attrs} className="block w-full">
+                    <Image
+                      src={logoSrc}
+                      alt={logoAlt}
+                      width={logo?.width ?? 113}
+                      height={logo?.height ?? 48}
+                      className="h-auto max-h-[4.8rem] w-auto max-w-[113px] object-contain object-left"
+                      sizes="113px"
+                      priority
+                    />
+                  </span>
+                )}
+              </ContentfulInspector>
             ) : (
               <PublicSvgImage
                 src="/colorful-coin-logo.svg"
@@ -336,10 +430,16 @@ export function SiteHeader({
                     <div
                       className={clsx(
                         'flex h-[9rem] w-full min-w-0 items-center border-b-[3px] transition-[border-color] duration-200 ease-out',
-                        hoveredSectionId === section.sys.id ? 'border-[var(--site-accent)]' : 'border-transparent',
+                        hoveredSectionId === section.sys.id
+                          ? 'border-[var(--site-accent)]'
+                          : 'border-transparent',
                       )}
                     >
-                      <SectionTabLabel locale={locale} section={section} isActive={hoveredSectionId === section.sys.id} />
+                      <SectionTabLabel
+                        locale={locale}
+                        section={section}
+                        isActive={hoveredSectionId === section.sys.id}
+                      />
                     </div>
                   </li>
                 ) : null,
@@ -347,13 +447,13 @@ export function SiteHeader({
             </ul>
             <div className="ml-6 hidden shrink-0 items-center gap-2 self-center lg:flex">
               <SiteThemeToggle />
-              {preview ? <NinetailedPreviewGearButton /> : null}
+              <PreviewGearMenu serverPreview={preview} pocPreviewToggle={pocPreviewToggle} />
             </div>
           </nav>
 
           <div className="flex items-center gap-4 md:hidden">
             <SiteThemeToggle />
-            {preview ? <NinetailedPreviewGearButton /> : null}
+            <PreviewGearMenu serverPreview={preview} pocPreviewToggle={pocPreviewToggle} />
             <button
               type="button"
               className="inline-flex text-[var(--site-text)]"
@@ -372,7 +472,7 @@ export function SiteHeader({
 
           <div className="hidden shrink-0 items-center gap-2 md:flex lg:hidden">
             <SiteThemeToggle />
-            {preview ? <NinetailedPreviewGearButton /> : null}
+            <PreviewGearMenu serverPreview={preview} pocPreviewToggle={pocPreviewToggle} />
           </div>
         </div>
       </header>
@@ -402,18 +502,27 @@ export function SiteHeader({
       ) : null}
 
       {open && (
-        <dialog open className="fixed inset-0 z-[110] m-0 flex max-h-none max-w-none flex-col bg-[var(--site-bg)] p-0 text-[var(--site-text)]">
+        <dialog
+          open
+          className="fixed inset-0 z-[110] m-0 flex max-h-none max-w-none flex-col bg-[var(--site-bg)] p-0 text-[var(--site-text)]"
+        >
           <div className="flex items-center justify-between border-b border-[color-mix(in_srgb,var(--site-text)_18%,transparent)] px-6 py-4">
             <LocaleLink locale={locale} href={logoHref} onClick={() => setOpen(false)}>
               {logoSrc ? (
-                <Image
-                  src={logoSrc}
-                  alt={logoAlt}
-                  width={logo?.width ?? 113}
-                  height={logo?.height ?? 48}
-                  className="h-auto max-h-[4.8rem] w-[113px] object-contain object-left"
-                  sizes="113px"
-                />
+                <ContentfulInspector assetId={logo?.sys.id} fieldId="file">
+                  {attrs => (
+                    <span {...attrs} className="block w-[113px]">
+                      <Image
+                        src={logoSrc}
+                        alt={logoAlt}
+                        width={logo?.width ?? 113}
+                        height={logo?.height ?? 48}
+                        className="h-auto max-h-[4.8rem] w-[113px] object-contain object-left"
+                        sizes="113px"
+                      />
+                    </span>
+                  )}
+                </ContentfulInspector>
               ) : (
                 <PublicSvgImage
                   src="/colorful-coin-logo.svg"
@@ -424,7 +533,12 @@ export function SiteHeader({
                 />
               )}
             </LocaleLink>
-            <button type="button" className="text-[2rem]" onClick={() => setOpen(false)} aria-label="Close menu">
+            <button
+              type="button"
+              className="text-[2rem]"
+              onClick={() => setOpen(false)}
+              aria-label="Close menu"
+            >
               ✕
             </button>
           </div>
@@ -432,19 +546,33 @@ export function SiteHeader({
             <ul className="m-0 list-none space-y-2 p-0 text-[1.9rem]">
               {sections.map(section =>
                 section ? (
-                  <li key={section.sys.id} className="border-b border-[color-mix(in_srgb,var(--site-text)_12%,transparent)] pb-4 pt-2">
+                  <li
+                    key={section.sys.id}
+                    className="border-b border-[color-mix(in_srgb,var(--site-text)_12%,transparent)] pb-4 pt-2"
+                  >
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                       {section.sectionTitleLink?.slug ? (
-                        <LocaleLink
-                          locale={locale}
-                          href={hrefForPageSlug(section.sectionTitleLink.slug)}
-                          className="font-semibold text-[var(--site-accent)]"
-                          onClick={() => setOpen(false)}
-                        >
-                          {section.label}
-                        </LocaleLink>
+                        <ContentfulInspector entryId={section.sys.id} fieldId="label">
+                          {attrs => (
+                            <LocaleLink
+                              locale={locale}
+                              href={hrefForPageSlug(section.sectionTitleLink!.slug)}
+                              className="font-semibold text-[var(--site-accent)]"
+                              onClick={() => setOpen(false)}
+                              {...attrs}
+                            >
+                              {section.label}
+                            </LocaleLink>
+                          )}
+                        </ContentfulInspector>
                       ) : (
-                        <span className="font-semibold text-[var(--site-accent)]">{section.label}</span>
+                        <ContentfulInspector entryId={section.sys.id} fieldId="label">
+                          {attrs => (
+                            <span {...attrs} className="font-semibold text-[var(--site-accent)]">
+                              {section.label}
+                            </span>
+                          )}
+                        </ContentfulInspector>
                       )}
                     </div>
                     <FeaturedPromo locale={locale} section={section} />

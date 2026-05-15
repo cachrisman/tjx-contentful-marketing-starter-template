@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "NODE_ENV=production next build",
     "analyze": "NODE_ENV=production next build --webpack",
     "check:preview-bundle": "node scripts/check-preview-bundle.mjs",
     "start": "next start",

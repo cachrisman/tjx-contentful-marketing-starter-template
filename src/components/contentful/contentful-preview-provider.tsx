@@ -1,19 +1,47 @@
 'use client';
 
 import { ContentfulLivePreviewProvider } from '@contentful/live-preview/react';
-import { createContext, useContext, useEffect, type ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
+} from 'react';
 
-const ContentfulInspectorEnabledContext = createContext(false);
+type ContentfulPreviewContextValue = {
+  preview: boolean;
+  inspectorSuppressed: boolean;
+  setInspectorSuppressed: Dispatch<SetStateAction<boolean>>;
+};
+
+const ContentfulPreviewContext = createContext<ContentfulPreviewContextValue>({
+  preview: false,
+  inspectorSuppressed: false,
+  setInspectorSuppressed: () => {},
+});
+
+export function useContentfulPreviewEnabled(): boolean {
+  return useContext(ContentfulPreviewContext).preview;
+}
 
 /**
  * `true` when the page is rendered in Contentful Live Preview. Components use this to skip
- * `useContentfulInspectorMode` (and the `data-contentful-*` attributes it emits) entirely on
- * production traffic. Whether overlays are actually shown is controlled by the editor’s own eye
- * toggle, which the SDK handles internally via `INSPECTOR_MODE_CHANGED` → `InspectorMode.init()` /
- * `cleanup()` — we do not need to mirror that state ourselves.
+ * preview-only UI when inspector overlays would otherwise conflict with it. Whether overlays are
+ * actually shown is controlled by the editor’s own eye toggle, which the SDK handles internally via
+ * `INSPECTOR_MODE_CHANGED` → `InspectorMode.init()` / `cleanup()` — we do not need to mirror that
+ * state ourselves.
  */
 export function useContentfulInspectorEnabled(): boolean {
-  return useContext(ContentfulInspectorEnabledContext);
+  const { preview, inspectorSuppressed } = useContext(ContentfulPreviewContext);
+  return preview && !inspectorSuppressed;
+}
+
+export function useSetContentfulInspectorSuppressed(): Dispatch<SetStateAction<boolean>> {
+  return useContext(ContentfulPreviewContext).setInspectorSuppressed;
 }
 
 /**
@@ -33,7 +61,10 @@ function useSilenceUnknownSubscriptionWarning(enabled: boolean) {
     const original = console.error;
     console.error = (...args: unknown[]) => {
       const first = args[0];
-      if (typeof first === 'string' && first.includes('Received an update for an unknown subscription')) {
+      if (
+        typeof first === 'string' &&
+        first.includes('Received an update for an unknown subscription')
+      ) {
         return;
       }
       original.apply(console, args as Parameters<typeof console.error>);
@@ -65,11 +96,20 @@ export function ContentfulPreviewProvider({
   children: ReactNode;
 }) {
   const space = process.env.NEXT_PUBLIC_CONTENTFUL_SPACE_ID ?? '';
+  const [inspectorSuppressed, setInspectorSuppressed] = useState(false);
+  const contextValue = useMemo(
+    () => ({
+      preview,
+      inspectorSuppressed,
+      setInspectorSuppressed,
+    }),
+    [preview, inspectorSuppressed],
+  );
 
   useSilenceUnknownSubscriptionWarning(preview);
 
   return (
-    <ContentfulInspectorEnabledContext.Provider value={preview}>
+    <ContentfulPreviewContext.Provider value={contextValue}>
       <ContentfulLivePreviewProvider
         locale={locale}
         space={space}
@@ -81,7 +121,6 @@ export function ContentfulPreviewProvider({
         experimental={
           preview
             ? {
-                // Hide inspector outlines for fields covered by overlays (e.g. mega menu over page body).
                 hideCoveredElementOutlines: true,
               }
             : undefined
@@ -89,6 +128,6 @@ export function ContentfulPreviewProvider({
       >
         {children}
       </ContentfulLivePreviewProvider>
-    </ContentfulInspectorEnabledContext.Provider>
+    </ContentfulPreviewContext.Provider>
   );
 }

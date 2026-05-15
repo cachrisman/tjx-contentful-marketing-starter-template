@@ -1,5 +1,19 @@
-import type { Locale } from '@/lib/i18n/config';
+import { isLocale, type Locale } from '@/lib/i18n/config';
 import { normalizeSlug } from '@/lib/slug-normalize';
+
+/**
+ * Parse `/{locale}` or `/{locale}/{slug}` for client-side links (e.g. draft toggle).
+ * Returns `slugKey` `home` for the locale root.
+ */
+export function localeSlugKeyFromPathname(pathname: string | null): { locale: Locale; slugKey: string } | null {
+  if (!pathname) return null;
+  const seg = pathname.split('/').filter(Boolean);
+  if (seg.length < 1 || !isLocale(seg[0])) return null;
+  const locale = seg[0];
+  if (seg.length < 2) return { locale, slugKey: 'home' };
+  const n = normalizeSlug(seg[1]);
+  return { locale, slugKey: !n || n === 'home' ? 'home' : n };
+}
 
 /** Public URL path for a Page slug and locale (home slug → locale root). */
 export function pagePath(locale: Locale, slug?: string | null) {

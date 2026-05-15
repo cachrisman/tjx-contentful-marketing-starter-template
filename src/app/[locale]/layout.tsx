@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import type { ExperienceConfiguration } from '@ninetailed/experience.js';
 import { notFound } from 'next/navigation';
 
 import { cookies, headers } from 'next/headers';
@@ -26,9 +27,15 @@ import {
   readSelectionSecret,
 } from '@/lib/personalization/config';
 import { verifySelection } from '@/lib/personalization/selection-header';
+import { loadPreviewPluginDataFromContentfulCached } from '@/lib/personalization/preview-plugin-catalog-cache';
+import { alignPreviewPluginExperienceAudiences } from '@/lib/personalization/preview-plugin-from-contentful';
+import { loadHeroExperiencesFromEnvForPreviewCatalog } from '@/lib/personalization/hero-experiences-from-env';
 import {
   loadPreviewAudiencesFromEnv,
   loadPreviewExperiencesFromEnv,
+  mergePreviewAudiencesForPlugin,
+  mergePreviewExperiencesForPlugin,
+  type NinetailedPreviewAudience,
 } from '@/lib/personalization/preview-plugin-data';
 import { siteThemeFromGlobalSettings } from '@/lib/theme/site-theme';
 
@@ -78,9 +85,15 @@ export default async function LocaleLayout({
   const gs = pickGlobalSettingsEntry(globalCollection);
   const themeColors = siteThemeFromGlobalSettings(gs);
 
-  const [navigationFallback, footerFallback] = await Promise.all([
+  const [navigationFallback, footerFallback, previewPluginFromCf] = await Promise.all([
     loadNavigation(locale, preview),
     loadFooter(locale, preview),
+    preview
+      ? loadPreviewPluginDataFromContentfulCached(locale)
+      : Promise.resolve({
+          experiences: [] as ExperienceConfiguration[],
+          audiences: [] as NinetailedPreviewAudience[],
+        }),
   ]);
 
   const navigation = navigationFromGlobalSettings(globalCollection) ?? navigationFallback;
@@ -100,10 +113,33 @@ export default async function LocaleLayout({
     readSelectionSecret(),
     proxyPathHeader,
   );
-  const experienceVariantsMap = selection?.experienceVariants ?? {};
+  // In Contentful draft/preview, the Ninetailed Preview plugin drives variant
+  // selection on the client. A non-empty ESR map would pin `ESRLoadingComponent`
+  // to the signed server index and ignore preview-widget changes — use an
+  // empty map so the hero follows the plugin + SDK after hydration.
+  const experienceVariantsMap = preview ? {} : (selection?.experienceVariants ?? {});
 
-  const previewExperiences = preview ? loadPreviewExperiencesFromEnv() : [];
-  const previewAudiences = preview ? loadPreviewAudiencesFromEnv() : [];
+  const previewExperiences = preview
+    ? mergePreviewExperiencesForPlugin(
+        mergePreviewExperiencesForPlugin(
+          previewPluginFromCf.experiences,
+          loadPreviewExperiencesFromEnv(),
+        ),
+        loadHeroExperiencesFromEnvForPreviewCatalog(),
+      )
+    : [];
+  const previewAudiences = preview
+    ? mergePreviewAudiencesForPlugin(
+        previewPluginFromCf.audiences,
+        previewExperiences,
+        loadPreviewAudiencesFromEnv(),
+      )
+    : [];
+  if (preview) {
+    alignPreviewPluginExperienceAudiences(previewExperiences, previewAudiences);
+  }
+
+  const pocPreviewToggle = process.env.CONTENTFUL_POC_PREVIEW_TOGGLE === '1';
 
   return (
     <ContentfulPreviewProvider locale={locale} preview={preview} environment={contentfulEnvironment}>
@@ -121,6 +157,7 @@ export default async function LocaleLayout({
           logo={gs?.logo}
           logoTarget={gs?.logoTarget}
           preview={preview}
+          pocPreviewToggle={pocPreviewToggle}
         />
         <main className="flex w-full flex-1 flex-col items-stretch">{children}</main>
         <SiteFooter locale={locale} footer={footer} />

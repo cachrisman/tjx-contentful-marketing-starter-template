@@ -1,11 +1,10 @@
 'use client';
 
-import { useContentfulInspectorMode } from '@contentful/live-preview/react';
 import clsx from 'clsx';
 import Image from 'next/image';
 import type { ComponentPropsWithoutRef } from 'react';
 
-import { useContentfulInspectorEnabled } from '@/components/contentful/contentful-preview-provider';
+import { ContentfulInspector } from '@/components/contentful/contentful-inspector';
 import { LocalePageLink } from '@/components/marketing/locale-link';
 import { HeroBannerView } from '@/components/marketing/hero-banner-view';
 import { RichTextField, type RichTextFieldProps } from '@/components/marketing/richtext';
@@ -18,56 +17,6 @@ type Props = {
   entry: ResolvedMarketingEntry;
   locale: Locale;
 };
-
-function InspectSpan({
-  entryId,
-  fieldId,
-  children,
-  className,
-  style,
-}: {
-  entryId: string;
-  fieldId: string;
-  children: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  const inspectorEnabled = useContentfulInspectorEnabled();
-  if (!inspectorEnabled) {
-    return (
-      <span className={className} style={style}>
-        {children}
-      </span>
-    );
-  }
-  return (
-    <InspectSpanLive entryId={entryId} fieldId={fieldId} className={className} style={style}>
-      {children}
-    </InspectSpanLive>
-  );
-}
-
-function InspectSpanLive({
-  entryId,
-  fieldId,
-  children,
-  className,
-  style,
-}: {
-  entryId: string;
-  fieldId: string;
-  children: React.ReactNode;
-  className?: string;
-  style?: React.CSSProperties;
-}) {
-  const inspector = useContentfulInspectorMode({ entryId });
-  const attrs = inspector({ fieldId }) ?? {};
-  return (
-    <span className={className} style={style} {...attrs}>
-      {children}
-    </span>
-  );
-}
 
 function SectionShell({
   children,
@@ -137,33 +86,69 @@ export function MarketingEntryView({ entry, locale }: Props) {
             >
               <div className="my-auto flex flex-col">
                 {entry.headline && (
-                  <h2 className={clsx('max-w-[60.4rem] text-[3rem] font-bold leading-snug xl:text-[3.5rem]', HEADLINE_CLS)}>
-                    {entry.headline}
-                  </h2>
+                  <ContentfulInspector entryId={entry.sys.id} fieldId="headline">
+                    {attrs => (
+                      <h2
+                        {...attrs}
+                        className={clsx(
+                          'max-w-[60.4rem] text-[3rem] font-bold leading-snug xl:text-[3.5rem]',
+                          HEADLINE_CLS,
+                        )}
+                      >
+                        {entry.headline}
+                      </h2>
+                    )}
+                  </ContentfulInspector>
                 )}
                 {entry.bodyText?.json && (
-                  <div className={clsx('mt-7 text-[1.8rem] leading-relaxed md:text-[2.5rem] md:[&_p]:text-[1.8rem] xl:[&_p]:text-[1.8rem]', TEXT_CLS)}>
-                    <RichTextField json={entry.bodyText.json} locale={locale} />
-                  </div>
+                  <ContentfulInspector entryId={entry.sys.id} fieldId="bodyText">
+                    {attrs => (
+                      <div
+                        {...attrs}
+                        className={clsx(
+                          'mt-7 text-[1.8rem] leading-relaxed md:text-[2.5rem] md:[&_p]:text-[1.8rem] xl:[&_p]:text-[1.8rem]',
+                          TEXT_CLS,
+                        )}
+                      >
+                        <RichTextField json={entry.bodyText!.json} locale={locale} />
+                      </div>
+                    )}
+                  </ContentfulInspector>
                 )}
                 {entry.targetPage && entry.ctaText && (
                   <div className="mt-8">
-                    <LocalePageLink locale={locale} slug={entry.targetPage.slug} className={BUTTON_CLS}>
-                      {entry.ctaText}
-                    </LocalePageLink>
+                    <ContentfulInspector entryId={entry.sys.id} fieldId="ctaText">
+                      {attrs => (
+                        <span {...attrs} className="inline-block">
+                          <LocalePageLink
+                            locale={locale}
+                            slug={entry.targetPage!.slug}
+                            className={BUTTON_CLS}
+                          >
+                            {entry.ctaText}
+                          </LocalePageLink>
+                        </span>
+                      )}
+                    </ContentfulInspector>
                   </div>
                 )}
               </div>
               {imgUrl && (
-                <div className="flex items-center justify-center rounded-2xl shadow-[0_13px_27px_-5px_rgba(25,37,50,0.15)]">
-                  <Image
-                    src={imgUrl}
-                    alt={entry.image?.title ?? ''}
-                    width={900}
-                    height={700}
-                    className="h-auto w-full rounded-2xl object-cover"
-                  />
-                </div>
+                <ContentfulInspector entryId={entry.sys.id} fieldId="image">
+                  {attrs => (
+                    <div {...attrs} className="flex items-center justify-center">
+                      <div className="rounded-2xl shadow-[0_13px_27px_-5px_rgba(25,37,50,0.15)]">
+                        <Image
+                          src={imgUrl}
+                          alt={entry.image?.title ?? ''}
+                          width={900}
+                          height={700}
+                          className="h-auto w-full rounded-2xl object-cover"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </ContentfulInspector>
               )}
             </div>
           </SectionShell>
@@ -173,37 +158,82 @@ export function MarketingEntryView({ entry, locale }: Props) {
 
     case 'ComponentCta': {
       const buttons = [
-        { text: entry.ctaText, page: entry.targetPage, params: entry.urlParameters },
-        { text: entry.ctaText2, page: entry.targetPage2, params: entry.urlParameters2 },
-        { text: entry.ctaText3, page: entry.targetPage3, params: entry.urlParameters3 },
-        { text: entry.ctaText4, page: entry.targetPage4, params: entry.urlParameters4 },
-      ].filter((b): b is { text: string; page: NonNullable<typeof b.page>; params: string | null | undefined } =>
-        Boolean(b.text && b.page),
+        {
+          text: entry.ctaText,
+          page: entry.targetPage,
+          params: entry.urlParameters,
+          fieldId: 'ctaText',
+        },
+        {
+          text: entry.ctaText2,
+          page: entry.targetPage2,
+          params: entry.urlParameters2,
+          fieldId: 'ctaText2',
+        },
+        {
+          text: entry.ctaText3,
+          page: entry.targetPage3,
+          params: entry.urlParameters3,
+          fieldId: 'ctaText3',
+        },
+        {
+          text: entry.ctaText4,
+          page: entry.targetPage4,
+          params: entry.urlParameters4,
+          fieldId: 'ctaText4',
+        },
+      ].filter(
+        (
+          b,
+        ): b is {
+          text: string;
+          page: NonNullable<typeof b.page>;
+          params: string | null | undefined;
+          fieldId: string;
+        } => Boolean(b.text && b.page),
       );
 
       return (
         <PaletteSection paletteKey={entry.colorPalette} className="py-16 md:py-24">
           <SectionShell className="text-center">
             {entry.headline && (
-              <h2 className={clsx('text-[3rem] font-semibold', HEADLINE_CLS)}>{entry.headline}</h2>
+              <ContentfulInspector entryId={entry.sys.id} fieldId="headline">
+                {attrs => (
+                  <h2 {...attrs} className={clsx('text-[3rem] font-semibold', HEADLINE_CLS)}>
+                    {entry.headline}
+                  </h2>
+                )}
+              </ContentfulInspector>
             )}
             {entry.subline?.json && (
-              <div className={clsx('mx-auto mt-6 max-w-3xl text-[1.8rem]', TEXT_CLS)}>
-                <RichTextField json={entry.subline.json} locale={locale} />
-              </div>
+              <ContentfulInspector entryId={entry.sys.id} fieldId="subline">
+                {attrs => (
+                  <div
+                    {...attrs}
+                    className={clsx('mx-auto mt-6 max-w-3xl text-[1.8rem]', TEXT_CLS)}
+                  >
+                    <RichTextField json={entry.subline!.json} locale={locale} />
+                  </div>
+                )}
+              </ContentfulInspector>
             )}
             {buttons.length > 0 && (
               <div className="mt-8 flex flex-wrap justify-center gap-4">
                 {buttons.map((btn, idx) => (
-                  <LocalePageLink
-                    key={idx}
-                    locale={locale}
-                    slug={btn.page.slug}
-                    urlParameters={btn.params}
-                    className={clsx(BUTTON_CLS, 'px-8 py-3')}
-                  >
-                    {btn.text}
-                  </LocalePageLink>
+                  <ContentfulInspector key={idx} entryId={entry.sys.id} fieldId={btn.fieldId}>
+                    {attrs => (
+                      <span {...attrs} className="inline-block">
+                        <LocalePageLink
+                          locale={locale}
+                          slug={btn.page.slug}
+                          urlParameters={btn.params}
+                          className={clsx(BUTTON_CLS, 'px-8 py-3')}
+                        >
+                          {btn.text}
+                        </LocalePageLink>
+                      </span>
+                    )}
+                  </ContentfulInspector>
                 ))}
               </div>
             )}
@@ -214,9 +244,24 @@ export function MarketingEntryView({ entry, locale }: Props) {
 
     case 'ComponentInfoBlock': {
       const blocks = [
-        { img: entry.block1Image, json: entry.block1Body },
-        { img: entry.block2Image, json: entry.block2Body },
-        { img: entry.block3Image, json: entry.block3Body },
+        {
+          img: entry.block1Image,
+          json: entry.block1Body,
+          imageFieldId: 'block1Image',
+          bodyFieldId: 'block1Body',
+        },
+        {
+          img: entry.block2Image,
+          json: entry.block2Body,
+          imageFieldId: 'block2Image',
+          bodyFieldId: 'block2Body',
+        },
+        {
+          img: entry.block3Image,
+          json: entry.block3Body,
+          imageFieldId: 'block3Image',
+          bodyFieldId: 'block3Body',
+        },
       ];
 
       return (
@@ -225,10 +270,22 @@ export function MarketingEntryView({ entry, locale }: Props) {
             {(entry.headline || entry.subline) && (
               <div className="mb-12 text-center">
                 {entry.headline && (
-                  <h2 className={clsx('text-[3rem] font-semibold', HEADLINE_CLS)}>{entry.headline}</h2>
+                  <ContentfulInspector entryId={entry.sys.id} fieldId="headline">
+                    {attrs => (
+                      <h2 {...attrs} className={clsx('text-[3rem] font-semibold', HEADLINE_CLS)}>
+                        {entry.headline}
+                      </h2>
+                    )}
+                  </ContentfulInspector>
                 )}
                 {entry.subline && (
-                  <p className={clsx('mt-4 text-[2rem]', TEXT_CLS)}>{entry.subline}</p>
+                  <ContentfulInspector entryId={entry.sys.id} fieldId="subline">
+                    {attrs => (
+                      <p {...attrs} className={clsx('mt-4 text-[2rem]', TEXT_CLS)}>
+                        {entry.subline}
+                      </p>
+                    )}
+                  </ContentfulInspector>
                 )}
               </div>
             )}
@@ -236,16 +293,32 @@ export function MarketingEntryView({ entry, locale }: Props) {
               {blocks.map((b, i) => (
                 <div key={i} className="flex flex-col items-center text-center">
                   {b.img?.url && (
-                    <Image
-                      src={cfSrc(b.img.url, 600)}
-                      alt={b.img.title ?? ''}
-                      width={320}
-                      height={240}
-                      className="mb-6 h-auto w-full max-w-xs rounded-lg object-cover"
-                    />
+                    <ContentfulInspector entryId={entry.sys.id} fieldId={b.imageFieldId}>
+                      {attrs => (
+                        <div {...attrs} className="mb-6 w-full max-w-xs">
+                          <Image
+                            src={cfSrc(b.img!.url!, 600)}
+                            alt={b.img!.title ?? ''}
+                            width={320}
+                            height={240}
+                            className="h-auto w-full rounded-lg object-cover"
+                          />
+                        </div>
+                      )}
+                    </ContentfulInspector>
                   )}
                   {b.json?.json && (
-                    <RichTextField json={b.json.json} locale={locale} richTextEmbeddings={undefined} />
+                    <ContentfulInspector entryId={entry.sys.id} fieldId={b.bodyFieldId}>
+                      {attrs => (
+                        <div {...attrs}>
+                          <RichTextField
+                            json={b.json!.json}
+                            locale={locale}
+                            richTextEmbeddings={undefined}
+                          />
+                        </div>
+                      )}
+                    </ContentfulInspector>
                   )}
                 </div>
               ))}
@@ -269,32 +342,41 @@ export function MarketingEntryView({ entry, locale }: Props) {
               )}
             >
               {entry.image?.url && (
-                <div className="md:w-1/3">
-                  <Image
-                    src={cfSrc(entry.image.url, 900)}
-                    alt={entry.image.title ?? ''}
-                    width={400}
-                    height={400}
-                    className="rounded-full object-cover"
-                  />
-                </div>
+                <ContentfulInspector entryId={entry.sys.id} fieldId="image">
+                  {attrs => (
+                    <div {...attrs} className="md:w-1/3">
+                      <Image
+                        src={cfSrc(entry.image!.url!, 900)}
+                        alt={entry.image!.title ?? ''}
+                        width={400}
+                        height={400}
+                        className="rounded-full object-cover"
+                      />
+                    </div>
+                  )}
+                </ContentfulInspector>
               )}
-              <blockquote
-                className={clsx(
-                  'flex-1 text-[2.4rem] italic leading-snug md:text-[3rem]',
-                  HEADLINE_CLS,
-                  entry.quoteAlignment === true ? 'text-center' : '',
-                )}
-              >
-                {entry.quote?.json && (
-                  <RichTextField
-                    json={entry.quote.json}
-                    links={entry.quote.links as RichTextFieldProps['links']}
-                    richTextEmbeddings={embed}
-                    locale={locale}
-                  />
-                )}
-              </blockquote>
+              {entry.quote?.json && (
+                <ContentfulInspector entryId={entry.sys.id} fieldId="quote">
+                  {attrs => (
+                    <blockquote
+                      {...attrs}
+                      className={clsx(
+                        'flex-1 text-[2.4rem] italic leading-snug md:text-[3rem]',
+                        HEADLINE_CLS,
+                        entry.quoteAlignment === true ? 'text-center' : '',
+                      )}
+                    >
+                      <RichTextField
+                        json={entry.quote!.json}
+                        links={entry.quote!.links as RichTextFieldProps['links']}
+                        richTextEmbeddings={embed}
+                        locale={locale}
+                      />
+                    </blockquote>
+                  )}
+                </ContentfulInspector>
+              )}
             </div>
           </SectionShell>
         </PaletteSection>
@@ -308,20 +390,39 @@ export function MarketingEntryView({ entry, locale }: Props) {
         <PaletteSection paletteKey={entry.colorPalette} className="py-16 md:py-24">
           <SectionShell>
             {entry.headline && (
-              <h2 className={clsx('mb-6 text-center text-[3rem] font-semibold', HEADLINE_CLS)}>
-                {entry.headline}
-              </h2>
+              <ContentfulInspector entryId={entry.sys.id} fieldId="headline">
+                {attrs => (
+                  <h2
+                    {...attrs}
+                    className={clsx('mb-6 text-center text-[3rem] font-semibold', HEADLINE_CLS)}
+                  >
+                    {entry.headline}
+                  </h2>
+                )}
+              </ContentfulInspector>
             )}
             {entry.subline && (
-              <p className={clsx('mb-10 text-center text-[2rem]', TEXT_CLS)}>{entry.subline}</p>
+              <ContentfulInspector entryId={entry.sys.id} fieldId="subline">
+                {attrs => (
+                  <p {...attrs} className={clsx('mb-10 text-center text-[2rem]', TEXT_CLS)}>
+                    {entry.subline}
+                  </p>
+                )}
+              </ContentfulInspector>
             )}
             {entry.body?.json && (
-              <RichTextField
-                json={entry.body.json}
-                links={entry.body.links as RichTextFieldProps['links']}
-                richTextEmbeddings={embed}
-                locale={locale}
-              />
+              <ContentfulInspector entryId={entry.sys.id} fieldId="body">
+                {attrs => (
+                  <div {...attrs}>
+                    <RichTextField
+                      json={entry.body!.json}
+                      links={entry.body!.links as RichTextFieldProps['links']}
+                      richTextEmbeddings={embed}
+                      locale={locale}
+                    />
+                  </div>
+                )}
+              </ContentfulInspector>
             )}
           </SectionShell>
         </PaletteSection>
@@ -341,26 +442,54 @@ export function MarketingEntryView({ entry, locale }: Props) {
             )}
           >
             {entry.avatar?.url && (
-              <Image
-                src={cfSrc(entry.avatar.url, 400)}
-                alt={entry.name ?? ''}
-                width={200}
-                height={200}
-                className="h-48 w-48 rounded-full object-cover"
-              />
+              <ContentfulInspector entryId={entry.sys.id} fieldId="avatar">
+                {attrs => (
+                  <div {...attrs} className="h-48 w-48 shrink-0 rounded-full">
+                    <Image
+                      src={cfSrc(entry.avatar!.url!, 400)}
+                      alt={entry.name ?? ''}
+                      width={200}
+                      height={200}
+                      className="h-48 w-48 rounded-full object-cover"
+                    />
+                  </div>
+                )}
+              </ContentfulInspector>
             )}
             <div>
               {entry.name && (
-                <h3 className={clsx('text-[2.8rem] font-bold', HEADLINE_CLS)}>{entry.name}</h3>
+                <ContentfulInspector entryId={entry.sys.id} fieldId="name">
+                  {attrs => (
+                    <h3 {...attrs} className={clsx('text-[2.8rem] font-bold', HEADLINE_CLS)}>
+                      {entry.name}
+                    </h3>
+                  )}
+                </ContentfulInspector>
               )}
               {(entry.location || entry.website) && (
                 <p className={clsx('mt-2 text-[1.8rem] opacity-80', TEXT_CLS)}>
-                  {[entry.location, entry.website].filter(Boolean).join(' · ')}
+                  {entry.location && (
+                    <ContentfulInspector entryId={entry.sys.id} fieldId="location">
+                      {attrs => <span {...attrs}>{entry.location}</span>}
+                    </ContentfulInspector>
+                  )}
+                  {entry.location && entry.website ? ' · ' : null}
+                  {entry.website && (
+                    <ContentfulInspector entryId={entry.sys.id} fieldId="website">
+                      {attrs => <span {...attrs}>{entry.website}</span>}
+                    </ContentfulInspector>
+                  )}
                 </p>
               )}
               {entry.bio?.json && (
                 <div className="mt-6">
-                  <RichTextField json={entry.bio.json} locale={locale} />
+                  <ContentfulInspector entryId={entry.sys.id} fieldId="bio">
+                    {attrs => (
+                      <div {...attrs}>
+                        <RichTextField json={entry.bio!.json} locale={locale} />
+                      </div>
+                    )}
+                  </ContentfulInspector>
                 </div>
               )}
             </div>
@@ -381,29 +510,53 @@ export function MarketingEntryView({ entry, locale }: Props) {
           <SectionShell className="grid gap-12 md:grid-cols-2">
             <div>
               {entry.featuredImage?.url && (
-                <Image
-                  src={cfSrc(entry.featuredImage.url, 1200)}
-                  alt={entry.name ?? ''}
-                  width={800}
-                  height={600}
-                  priority
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="w-full rounded-2xl object-cover shadow-lg"
-                  style={{ height: 'auto' }}
-                />
+                <ContentfulInspector entryId={entry.sys.id} fieldId="featuredImage">
+                  {attrs => (
+                    <div {...attrs} className="w-full rounded-2xl shadow-lg">
+                      <Image
+                        src={cfSrc(entry.featuredImage!.url!, 1200)}
+                        alt={entry.name ?? ''}
+                        width={800}
+                        height={600}
+                        priority
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="h-auto w-full rounded-2xl object-cover"
+                      />
+                    </div>
+                  )}
+                </ContentfulInspector>
               )}
             </div>
             <div>
               {entry.name && (
-                <h1 className={clsx('text-[3.6rem] font-bold', HEADLINE_CLS)}>{entry.name}</h1>
+                <ContentfulInspector entryId={entry.sys.id} fieldId="name">
+                  {attrs => (
+                    <h1 {...attrs} className={clsx('text-[3.6rem] font-bold', HEADLINE_CLS)}>
+                      {entry.name}
+                    </h1>
+                  )}
+                </ContentfulInspector>
               )}
               {entry.price != null && (
-                <p className={clsx('mt-4 text-[2.8rem] font-semibold', HEADLINE_CLS)}>{fmt.format(entry.price)}</p>
+                <ContentfulInspector entryId={entry.sys.id} fieldId="price">
+                  {attrs => (
+                    <p
+                      {...attrs}
+                      className={clsx('mt-4 text-[2.8rem] font-semibold', HEADLINE_CLS)}
+                    >
+                      {fmt.format(entry.price!)}
+                    </p>
+                  )}
+                </ContentfulInspector>
               )}
               {entry.description?.json && (
-                <div className={clsx('mt-8 text-[1.8rem]', TEXT_CLS)}>
-                  <RichTextField json={entry.description.json} locale={locale} />
-                </div>
+                <ContentfulInspector entryId={entry.sys.id} fieldId="description">
+                  {attrs => (
+                    <div {...attrs} className={clsx('mt-8 text-[1.8rem]', TEXT_CLS)}>
+                      <RichTextField json={entry.description!.json} locale={locale} />
+                    </div>
+                  )}
+                </ContentfulInspector>
               )}
               {entry.featuresCollection?.items?.length ? (
                 <ul className="mt-10 space-y-10">
@@ -412,11 +565,26 @@ export function MarketingEntryView({ entry, locale }: Props) {
                       key={f!.sys.id ?? idx}
                       className="border-t border-[var(--section-border)] pt-8 first:border-0 first:pt-0"
                     >
-                      <h4 className={clsx('text-[2rem] font-semibold', HEADLINE_CLS)}>{f!.name}</h4>
+                      {f!.name && (
+                        <ContentfulInspector entryId={f!.sys.id} fieldId="name">
+                          {attrs => (
+                            <h4
+                              {...attrs}
+                              className={clsx('text-[2rem] font-semibold', HEADLINE_CLS)}
+                            >
+                              {f!.name}
+                            </h4>
+                          )}
+                        </ContentfulInspector>
+                      )}
                       {f!.shortDescription?.json && (
-                        <div className={clsx('mt-3 text-[1.8rem]', TEXT_CLS)}>
-                          <RichTextField json={f!.shortDescription.json} locale={locale} />
-                        </div>
+                        <ContentfulInspector entryId={f!.sys.id} fieldId="shortDescription">
+                          {attrs => (
+                            <div {...attrs} className={clsx('mt-3 text-[1.8rem]', TEXT_CLS)}>
+                              <RichTextField json={f!.shortDescription!.json} locale={locale} />
+                            </div>
+                          )}
+                        </ContentfulInspector>
                       )}
                     </li>
                   ))}
@@ -437,10 +605,22 @@ export function MarketingEntryView({ entry, locale }: Props) {
             {(entry.headline || entry.subline) && (
               <div className="mb-12 text-center">
                 {entry.headline && (
-                  <h2 className={clsx('text-[3rem] font-semibold', HEADLINE_CLS)}>{entry.headline}</h2>
+                  <ContentfulInspector entryId={entry.sys.id} fieldId="headline">
+                    {attrs => (
+                      <h2 {...attrs} className={clsx('text-[3rem] font-semibold', HEADLINE_CLS)}>
+                        {entry.headline}
+                      </h2>
+                    )}
+                  </ContentfulInspector>
                 )}
                 {entry.subline && (
-                  <p className={clsx('mt-4 text-[2rem]', TEXT_CLS)}>{entry.subline}</p>
+                  <ContentfulInspector entryId={entry.sys.id} fieldId="subline">
+                    {attrs => (
+                      <p {...attrs} className={clsx('mt-4 text-[2rem]', TEXT_CLS)}>
+                        {entry.subline}
+                      </p>
+                    )}
+                  </ContentfulInspector>
                 )}
               </div>
             )}
@@ -469,12 +649,22 @@ export function MarketingEntryView({ entry, locale }: Props) {
       return (
         <PaletteSection slug="default" className="pb-24 pt-0">
           {(entry.name || entry.shortDescription) && (
-            <div data-section-palette="inverse" className="relative mb-16 min-h-[59rem] bg-[var(--section-bg)]">
+            <div
+              data-section-palette="inverse"
+              className="relative mb-16 min-h-[59rem] bg-[var(--section-bg)]"
+            >
               {heroUrl && (
-                <div
-                  className="absolute inset-0 bg-cover bg-center opacity-90"
-                  style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)), url(${heroUrl})` }}
-                />
+                <ContentfulInspector entryId={entry.sys.id} fieldId="featuredImage">
+                  {attrs => (
+                    <div
+                      {...attrs}
+                      className="absolute inset-0 bg-cover bg-center opacity-90"
+                      style={{
+                        backgroundImage: `linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)), url(${heroUrl})`,
+                      }}
+                    />
+                  )}
+                </ContentfulInspector>
               )}
               <SectionShell
                 narrow
@@ -483,21 +673,41 @@ export function MarketingEntryView({ entry, locale }: Props) {
                   HEADLINE_CLS,
                 )}
               >
-                {entry.name && <h1 className="max-w-xl text-[4.5rem] font-bold">{entry.name}</h1>}
+                {entry.name && (
+                  <ContentfulInspector entryId={entry.sys.id} fieldId="name">
+                    {attrs => (
+                      <h1 {...attrs} className="max-w-xl text-[4.5rem] font-bold">
+                        {entry.name}
+                      </h1>
+                    )}
+                  </ContentfulInspector>
+                )}
                 {entry.shortDescription && (
-                  <p className="mt-4 max-w-2xl text-[2.5rem]">{entry.shortDescription}</p>
+                  <ContentfulInspector entryId={entry.sys.id} fieldId="shortDescription">
+                    {attrs => (
+                      <p {...attrs} className="mt-4 max-w-2xl text-[2.5rem]">
+                        {entry.shortDescription}
+                      </p>
+                    )}
+                  </ContentfulInspector>
                 )}
               </SectionShell>
             </div>
           )}
           <SectionShell narrow>
             {entry.body?.json && (
-              <RichTextField
-                json={entry.body.json}
-                links={entry.body.links as RichTextFieldProps['links']}
-                richTextEmbeddings={embed}
-                locale={locale}
-              />
+              <ContentfulInspector entryId={entry.sys.id} fieldId="body">
+                {attrs => (
+                  <div {...attrs}>
+                    <RichTextField
+                      json={entry.body!.json}
+                      links={entry.body!.links as RichTextFieldProps['links']}
+                      richTextEmbeddings={embed}
+                      locale={locale}
+                    />
+                  </div>
+                )}
+              </ContentfulInspector>
             )}
           </SectionShell>
         </PaletteSection>
@@ -540,22 +750,46 @@ function ProductColumn({
       )}
     >
       {product.featuredImage?.url && (
-        <Image
-          src={cfSrc(product.featuredImage.url, 800)}
-          alt={product.name ?? ''}
-          width={600}
-          height={400}
-          className="mb-8 h-auto w-full rounded-xl object-cover"
-        />
+        <ContentfulInspector entryId={product.sys.id} fieldId="featuredImage">
+          {attrs => (
+            <div {...attrs} className="mb-8 w-full">
+              <Image
+                src={cfSrc(product.featuredImage!.url!, 800)}
+                alt={product.name ?? ''}
+                width={600}
+                height={400}
+                className="h-auto w-full rounded-xl object-cover"
+              />
+            </div>
+          )}
+        </ContentfulInspector>
       )}
-      <h3 className={clsx('text-[2rem] font-medium', HEADLINE_CLS)}>{product.name}</h3>
+      {product.name && (
+        <ContentfulInspector entryId={product.sys.id} fieldId="name">
+          {attrs => (
+            <h3 {...attrs} className={clsx('text-[2rem] font-medium', HEADLINE_CLS)}>
+              {product.name}
+            </h3>
+          )}
+        </ContentfulInspector>
+      )}
       {product.price != null && (
-        <p className={clsx('mt-4 text-[2.4rem] font-semibold', HEADLINE_CLS)}>{fmt.format(product.price)}</p>
+        <ContentfulInspector entryId={product.sys.id} fieldId="price">
+          {attrs => (
+            <p {...attrs} className={clsx('mt-4 text-[2.4rem] font-semibold', HEADLINE_CLS)}>
+              {fmt.format(product.price!)}
+            </p>
+          )}
+        </ContentfulInspector>
       )}
       {product.description?.json && (
-        <div className={clsx('mt-8 flex-1 text-[1.8rem] leading-relaxed', TEXT_CLS)}>
-          <RichTextField json={product.description.json} locale={locale} />
-        </div>
+        <ContentfulInspector entryId={product.sys.id} fieldId="description">
+          {attrs => (
+            <div {...attrs} className={clsx('mt-8 flex-1 text-[1.8rem] leading-relaxed', TEXT_CLS)}>
+              <RichTextField json={product.description!.json} locale={locale} />
+            </div>
+          )}
+        </ContentfulInspector>
       )}
     </div>
   );
