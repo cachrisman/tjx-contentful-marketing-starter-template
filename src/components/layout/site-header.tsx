@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { ContentfulInspector } from '@/components/contentful/contentful-inspector';
-import { LocaleLink } from '@/components/marketing/locale-link';
+import { TimelineLocaleLink as LocaleLink } from '@/components/contentful/timeline-locale-link';
 import { PreviewGearMenu } from '@/components/personalization/preview-gear-menu';
 import { PublicSvgImage } from '@/components/ui/public-svg-image';
 import { SiteThemeToggle } from '@/components/theme/site-theme-toggle';

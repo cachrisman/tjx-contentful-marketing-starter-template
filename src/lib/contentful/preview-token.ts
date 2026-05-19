@@ -1,43 +1,28 @@
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { signSignedToken, verifySignedToken } from '@/lib/contentful/signed-token';
 
 export type PreviewTokenPayload = {
   locale: string;
   slug: string;
   exp: number;
+  release?: string;
+  timestamp?: string;
 };
 
+function isPreviewTokenPayload(value: unknown): value is PreviewTokenPayload {
+  if (value == null || typeof value !== 'object') return false;
+  const p = value as Record<string, unknown>;
+  if (typeof p.locale !== 'string' || typeof p.slug !== 'string' || typeof p.exp !== 'number') {
+    return false;
+  }
+  if (p.release !== undefined && typeof p.release !== 'string') return false;
+  if (p.timestamp !== undefined && typeof p.timestamp !== 'string') return false;
+  return true;
+}
+
 export function signPreviewToken(payload: PreviewTokenPayload, secret: string): string {
-  const body = Buffer.from(JSON.stringify(payload), 'utf8').toString('base64url');
-  const sig = createHmac('sha256', secret).update(body).digest('base64url');
-  return `${body}.${sig}`;
+  return signSignedToken(payload, secret);
 }
 
 export function verifyPreviewToken(token: string, secret: string): PreviewTokenPayload | null {
-  const dot = token.indexOf('.');
-  if (dot === -1) return null;
-  const body = token.slice(0, dot);
-  const sig = token.slice(dot + 1);
-  if (!body || !sig) return null;
-
-  const expectedSig = createHmac('sha256', secret).update(body).digest('base64url');
-  const sigBuf = Buffer.from(sig, 'utf8');
-  const expBuf = Buffer.from(expectedSig, 'utf8');
-  if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) {
-    return null;
-  }
-
-  try {
-    const json = Buffer.from(body, 'base64url').toString('utf8');
-    const payload = JSON.parse(json) as PreviewTokenPayload;
-    if (
-      typeof payload.locale !== 'string' ||
-      typeof payload.slug !== 'string' ||
-      typeof payload.exp !== 'number'
-    ) {
-      return null;
-    }
-    return payload;
-  } catch {
-    return null;
-  }
+  return verifySignedToken(token, secret, isPreviewTokenPayload);
 }

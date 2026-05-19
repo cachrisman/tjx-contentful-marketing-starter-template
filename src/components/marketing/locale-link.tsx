@@ -1,22 +1,26 @@
 import Link from 'next/link';
 import type { Locale } from '@/lib/i18n/config';
-import { pagePathWithUrlParameters, withLocalePath } from '@/lib/routing';
+import { appendTimelineParamsToHref, pagePathWithUrlParameters, withLocalePath } from '@/lib/routing';
 
 export function LocaleLink({
   locale,
   href,
   className,
+  timelineDisplayParams,
   children,
   ...rest
 }: {
   locale: Locale;
   href: string;
   className?: string;
+  /** App-owned display params (`ctf_release`, `ctf_timestamp`) from layout or Timeline context. */
+  timelineDisplayParams?: Record<string, string>;
   children: React.ReactNode;
 } & Omit<React.ComponentProps<typeof Link>, 'href'>) {
-  const full = href.startsWith('/')
+  const localized = href.startsWith('/')
     ? withLocalePath(locale, href === '/' ? '' : href)
     : withLocalePath(locale, href);
+  const full = appendTimelineParamsToHref(localized, timelineDisplayParams);
 
   return (
     <Link href={full} className={className} {...rest}>
@@ -30,6 +34,7 @@ export function LocalePageLink({
   slug,
   urlParameters,
   className,
+  timelineDisplayParams,
   children,
   ...rest
 }: {
@@ -38,10 +43,15 @@ export function LocalePageLink({
   /** Optional query string from Contentful (e.g. `foo=1` or `?foo=1`). */
   urlParameters?: string | null;
   className?: string;
+  timelineDisplayParams?: Record<string, string>;
   children: React.ReactNode;
 } & Omit<React.ComponentProps<typeof Link>, 'href'>) {
   return (
-    <Link href={pagePathWithUrlParameters(locale, slug, urlParameters)} className={className} {...rest}>
+    <Link
+      href={pagePathWithUrlParameters(locale, slug, urlParameters, timelineDisplayParams)}
+      className={className}
+      {...rest}
+    >
       {children}
     </Link>
   );

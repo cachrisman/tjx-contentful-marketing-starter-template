@@ -1,6 +1,6 @@
 'use client';
 
-import { LocalePageLink } from '@/components/marketing/locale-link';
+import { TimelineLocalePageLink as LocalePageLink } from '@/components/contentful/timeline-locale-link';
 import { NT_METRIC_HERO_CTA_CLICK } from '@/components/personalization/metrics-events';
 import { useTrackEvent } from '@/components/personalization/use-track-event';
 import type { Locale } from '@/lib/i18n/config';

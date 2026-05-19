@@ -5,7 +5,7 @@ import Image from 'next/image';
 import type { ComponentPropsWithoutRef } from 'react';
 
 import { ContentfulInspector } from '@/components/contentful/contentful-inspector';
-import { LocalePageLink } from '@/components/marketing/locale-link';
+import { TimelineLocalePageLink as LocalePageLink } from '@/components/contentful/timeline-locale-link';
 import { HeroBannerView } from '@/components/marketing/hero-banner-view';
 import { RichTextField, type RichTextFieldProps } from '@/components/marketing/richtext';
 import type { Locale } from '@/lib/i18n/config';

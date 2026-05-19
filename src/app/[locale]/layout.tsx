@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { cookies, headers } from 'next/headers';
 
 import { ContentfulPreviewProvider } from '@/components/contentful/contentful-preview-provider';
+import { TimelinePreviewBanner } from '@/components/contentful/timeline-preview-banner';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { SiteHeader } from '@/components/layout/site-header';
 import { NinetailedAppProviders } from '@/components/personalization/ninetailed-app-providers';
@@ -16,6 +17,8 @@ import {
   pickGlobalSettingsEntry,
 } from '@/lib/contentful/global-settings';
 import { isContentfulPreview } from '@/lib/contentful/preview-request';
+import { getTimelineContext } from '@/lib/contentful/timeline';
+import { timelineDisplayParams } from '@/lib/contentful/timeline-shared';
 import { loadFooter, loadNavigation } from '@/lib/contentful/resolve-entry';
 import { siteConfig } from '@/lib/site-config';
 import { isLocale, locales, type Locale } from '@/lib/i18n/config';
@@ -79,6 +82,10 @@ export default async function LocaleLayout({
   }
   const locale = loc as Locale;
   const preview = await isContentfulPreview();
+  const timelineContext = preview
+    ? await getTimelineContext({ trustProxyHeaders: true })
+    : null;
+  const timelineParams = timelineDisplayParams(timelineContext);
   const contentfulEnvironment = process.env.CONTENTFUL_ENVIRONMENT?.trim() || undefined;
 
   const globalCollection = await loadGlobalSettings(locale, preview);
@@ -142,7 +149,12 @@ export default async function LocaleLayout({
   const pocPreviewToggle = process.env.CONTENTFUL_POC_PREVIEW_TOGGLE === '1';
 
   return (
-    <ContentfulPreviewProvider locale={locale} preview={preview} environment={contentfulEnvironment}>
+    <ContentfulPreviewProvider
+      locale={locale}
+      preview={preview}
+      environment={contentfulEnvironment}
+      timelineContext={timelineContext}
+    >
       <NinetailedAppProviders
         locale={locale}
         preview={preview}
@@ -159,8 +171,11 @@ export default async function LocaleLayout({
           preview={preview}
           pocPreviewToggle={pocPreviewToggle}
         />
-        <main className="flex w-full flex-1 flex-col items-stretch">{children}</main>
-        <SiteFooter locale={locale} footer={footer} />
+        <main className="flex w-full flex-1 flex-col items-stretch">
+          <TimelinePreviewBanner locale={locale} />
+          {children}
+        </main>
+        <SiteFooter locale={locale} footer={footer} timelineDisplayParams={timelineParams} />
       </NinetailedAppProviders>
     </ContentfulPreviewProvider>
   );

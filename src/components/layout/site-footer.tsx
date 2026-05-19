@@ -18,9 +18,11 @@ const linkSubtleClass =
 export function SiteFooter({
   locale,
   footer,
+  timelineDisplayParams,
 }: {
   locale: Locale;
   footer: CtfFooterQuery['footerMenuCollection'];
+  timelineDisplayParams?: Record<string, string>;
 }) {
   const menu = footer?.items?.[0];
   if (!menu) return null;
@@ -58,6 +60,7 @@ export function SiteFooter({
                           <LocaleLink
                             locale={locale}
                             href={hrefForPageSlug(row.slug)}
+                            timelineDisplayParams={timelineDisplayParams}
                             className="mb-4 block text-[1.6rem] font-normal underline decoration-[var(--site-accent)] underline-offset-4 transition-colors hover:text-[var(--site-accent)]"
                             {...attrs}
                           >
@@ -78,6 +81,7 @@ export function SiteFooter({
                                 <LocaleLink
                                   locale={locale}
                                   href={hrefForPageSlug(p.slug)}
+                                  timelineDisplayParams={timelineDisplayParams}
                                   className={linkSubtleClass}
                                   {...attrs}
                                 >
@@ -171,6 +175,7 @@ export function SiteFooter({
           <LocaleLink
             locale={locale}
             href={pagePath(locale)}
+            timelineDisplayParams={timelineDisplayParams}
             className="inline-block brightness-[1.15]"
           >
             <PublicSvgImage
@@ -190,6 +195,7 @@ export function SiteFooter({
                     <LocaleLink
                       locale={locale}
                       href={hrefForPageSlug(p.slug)}
+                      timelineDisplayParams={timelineDisplayParams}
                       className="text-[1.8rem] text-[color-mix(in_srgb,var(--site-bg)_70%,var(--site-text))] underline-offset-4 hover:underline"
                       {...attrs}
                     >

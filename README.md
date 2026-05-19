@@ -77,6 +77,22 @@ When Draft Mode is **on**, the layout wraps the tree with `ContentfulLivePreview
 
 GraphQL queries include `sys.id` and `__typename` so updates and inspector mode can resolve entries.
 
+### Contentful Timeline preview
+
+Editors can preview future **Timeline releases** from the Contentful web app. Configure the preview platform URL:
+
+```
+{YOUR_SITE}/api/draft/enable?secret={CONTENTFUL_PREVIEW_SECRET}&slug={entry.fields.slug}&locale={entry.fields.locale}&timeline={timeline}
+```
+
+- Timeline trust is minted only on `/api/draft/enable` (requires `CONTENTFUL_PREVIEW_SECRET`). The signed `ctf_tl` cookie (`HttpOnly; Secure; SameSite=None; Path=/`) is authoritative for ~15 minutes (same horizon as the `cf_pt` first-hop token). Draft Mode itself can outlive that cookie; when it expires, the site falls back to current draft preview and strips stale display params on the next navigation.
+- URL params `ctf_release` and `ctf_timestamp` are **app-owned display affordances** only — never trusted outside the signed cookie session. The proxy reconciles them on GET HTML navigations.
+- **Sharing:** send the `/api/draft/enable?…&timeline=…` URL, not the post-redirect page URL. Each teammate must enter through enable to mint their own cookie.
+- **Exit timeline** (keep draft mode): `/api/draft/timeline/clear?slug=…&locale=…` or `timeline=current` on enable.
+- **Exit preview entirely:** `/api/draft/disable?slug=…&locale=…`
+- **Local HTTPS:** `SameSite=None; Secure` cookies are not sent over plain HTTP. Use `next dev --experimental-https`, a tunnel, or test Timeline end-to-end on an HTTPS preview deploy.
+- With an active Timeline context, live content updates are disabled (`enableLiveUpdates=false`) so editor mutations do not corrupt the future-release preview; inspector overlays remain on.
+
 ### Preview iframe / CSP
 
 Security headers intentionally **omit** `X-Frame-Options` so Contentful Preview can embed the site. `Content-Security-Policy` uses:

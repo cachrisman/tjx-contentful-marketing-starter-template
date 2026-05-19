@@ -29,14 +29,46 @@ export function pagePathWithUrlParameters(
   locale: Locale,
   slug?: string | null,
   urlParameters?: string | null,
+  extraParams?: Record<string, string>,
 ) {
   const base = pagePath(locale, slug);
+  const url = new URL(base, 'https://local.invalid');
+
   const raw = (urlParameters ?? '').trim();
-  if (!raw) {
-    return base;
+  if (raw) {
+    const cmsParams = new URLSearchParams(raw.startsWith('?') ? raw.slice(1) : raw);
+    for (const [key, value] of cmsParams.entries()) {
+      url.searchParams.set(key, value);
+    }
   }
-  const q = raw.startsWith('?') ? raw.slice(1) : raw;
-  return base.includes('?') ? `${base}&${q}` : `${base}?${q}`;
+
+  if (extraParams) {
+    for (const [key, value] of Object.entries(extraParams)) {
+      if (value) {
+        url.searchParams.set(key, value);
+      }
+    }
+  }
+
+  const q = url.search;
+  return q ? `${url.pathname}${q}` : url.pathname;
+}
+
+/** Merge timeline display params into an existing localized href. */
+export function appendTimelineParamsToHref(
+  href: string,
+  extraParams?: Record<string, string>,
+): string {
+  if (!extraParams || Object.keys(extraParams).length === 0) {
+    return href;
+  }
+  const url = new URL(href, 'https://local.invalid');
+  for (const [key, value] of Object.entries(extraParams)) {
+    if (value) {
+      url.searchParams.set(key, value);
+    }
+  }
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 export function withLocalePath(locale: Locale, path: string) {

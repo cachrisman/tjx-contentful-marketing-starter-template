@@ -12,6 +12,10 @@ import {
   type SetStateAction,
 } from 'react';
 
+import { TimelineContextProvider } from '@/components/contentful/timeline-context';
+import type { TimelineContext } from '@/lib/contentful/timeline-shared';
+import { hasTimelineContext } from '@/lib/contentful/timeline-shared';
+
 type ContentfulPreviewContextValue = {
   preview: boolean;
   inspectorSuppressed: boolean;
@@ -87,12 +91,14 @@ export function ContentfulPreviewProvider({
   locale,
   preview,
   environment,
+  timelineContext = null,
   children,
 }: {
   locale: string;
   preview: boolean;
   /** Contentful environment id (e.g. `master`). Must match GraphQL `CONTENTFUL_ENVIRONMENT`. */
   environment?: string;
+  timelineContext?: TimelineContext | null;
   children: ReactNode;
 }) {
   const space = process.env.NEXT_PUBLIC_CONTENTFUL_SPACE_ID ?? '';
@@ -108,26 +114,30 @@ export function ContentfulPreviewProvider({
 
   useSilenceUnknownSubscriptionWarning(preview);
 
+  const timelineActive = hasTimelineContext(timelineContext);
+
   return (
     <ContentfulPreviewContext.Provider value={contextValue}>
-      <ContentfulLivePreviewProvider
-        locale={locale}
-        space={space}
-        environment={environment}
-        enableInspectorMode={preview}
-        enableLiveUpdates={preview}
-        debugMode={process.env.NEXT_PUBLIC_CONTENTFUL_LIVE_PREVIEW_DEBUG === '1'}
-        targetOrigin={['https://app.contentful.com', 'https://app.eu.contentful.com']}
-        experimental={
-          preview
-            ? {
-                hideCoveredElementOutlines: true,
-              }
-            : undefined
-        }
-      >
-        {children}
-      </ContentfulLivePreviewProvider>
+      <TimelineContextProvider value={timelineContext}>
+        <ContentfulLivePreviewProvider
+          locale={locale}
+          space={space}
+          environment={environment}
+          enableInspectorMode={preview}
+          enableLiveUpdates={preview && !timelineActive}
+          debugMode={process.env.NEXT_PUBLIC_CONTENTFUL_LIVE_PREVIEW_DEBUG === '1'}
+          targetOrigin={['https://app.contentful.com', 'https://app.eu.contentful.com']}
+          experimental={
+            preview
+              ? {
+                  hideCoveredElementOutlines: true,
+                }
+              : undefined
+          }
+        >
+          {children}
+        </ContentfulLivePreviewProvider>
+      </TimelineContextProvider>
     </ContentfulPreviewContext.Provider>
   );
 }

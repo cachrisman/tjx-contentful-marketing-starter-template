@@ -2,6 +2,10 @@ import { encodeGraphQLResponse } from '@contentful/live-preview';
 import { print } from 'graphql';
 import type { TypedDocumentNode } from '@graphql-typed-document-node/core';
 
+import { injectTimelineDirective } from '@/lib/contentful/timeline-directive';
+import { getTimelineContext } from '@/lib/contentful/timeline';
+import { hasTimelineContext } from '@/lib/contentful/timeline-shared';
+
 /** Contentful counts whitespace toward the ~8KB POST body limit; codegen emits verbose queries. */
 function compactGraphqlQuery(source: string): string {
   return source.replace(/\s+/g, ' ').trim();
@@ -47,13 +51,24 @@ export async function contentfulGraphql<TResult, TVariables extends Record<strin
     );
   }
 
+  let documentToPrint = document;
+  if (opts.preview) {
+    const timelineCtx = await getTimelineContext({ trustProxyHeaders: true });
+    if (hasTimelineContext(timelineCtx)) {
+      documentToPrint = injectTimelineDirective(document, timelineCtx) as typeof document;
+    }
+  }
+
   const res = await fetch(graphqlEndpoint(), {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ query: compactGraphqlQuery(print(document)), variables }),
+    body: JSON.stringify({
+      query: compactGraphqlQuery(print(documentToPrint)),
+      variables,
+    }),
     cache: opts.preview ? 'no-store' : 'force-cache',
     next: opts.preview ? undefined : { revalidate: 60 },
   });

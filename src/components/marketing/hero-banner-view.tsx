@@ -7,7 +7,7 @@ import {
   ContentfulInspector,
   type ContentfulInspectorAttributes,
 } from '@/components/contentful/contentful-inspector';
-import { LocalePageLink } from '@/components/marketing/locale-link';
+import { TimelineLocalePageLink as LocalePageLink } from '@/components/contentful/timeline-locale-link';
 import { HeroCtaNinetailedTrack } from '@/components/personalization/hero-cta-ninetailed-track';
 import { RichTextField } from '@/components/marketing/richtext';
 import type { Locale } from '@/lib/i18n/config';
